@@ -1,0 +1,49 @@
+<html>
+<head>
+  <script type="text/javascript" 
+          src="/scripts/lib/jquery.js"></script>
+  
+  <script type="text/javascript" 
+          src="/scripts/ours/eval.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/ws_driver.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/main.js"></script>
+  <style type="text/css">
+    #wex {
+      padding: 2em;
+    }
+
+    .value {
+        color: #448;
+    }
+
+    .stdout {
+        color: #484;
+    }
+
+    .stderr {
+        color: #a22;
+    }
+
+    #input {
+      box-shadow: none;
+      border: none;
+      background: #f0ffff;
+      outline: none;
+      width: 90%;
+      padding: 0.3em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <section id="wex">
+    <div id="output">
+    </div>
+    <div>
+      <span id="prompt">wex></span> <input id="input">
+    </div>
+  </section>
+</body>
+</html>
