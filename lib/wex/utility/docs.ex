@@ -46,7 +46,7 @@ defmodule Wex.Util.Docs do
 
   defp handle_docs(module, { _, docs })
   when is_binary(docs) do
-    T.help(T.heading(inspect(module)), docs)
+    T.help("<h1>#{inspect(module)}</h1>\n" <> Earmark.to_html(docs))
   end
 
   defp handle_docs(module, { _, _ }) do
@@ -63,37 +63,48 @@ defmodule Wex.Util.Docs do
   # Docs for the given function, with any arity, in any of the modules. #
   #######################################################################
 
-  def h(module, function) 
-  when is_atom(module) and is_atom(function) do
-    case h_mod_fun(module, function) do
-      :no_docs ->
-        T.error "#{inspect module} was not compiled with docs"
-      [] ->
-        T.error("Unknown function: #{inspect module}.#{function}")
-      docs ->
-        docs
+  def h(modules, function) 
+  when is_list(modules) and is_atom(function) do
+    docs = modules
+           |> Enum.flat_map(&h_mod_fun(&1, function))
+           |> Enum.filter(fn doc -> doc != [] end)
+           |> Enum.filter(fn %{ help: _ } -> true
+                             _            -> false
+                          end)
+
+    if docs == [] do
+      T.error "Unknown function #{function}"
+    else
+      merge_helps(docs)
     end
   end
 
-  defp check_for_empty_docs_in_modules([], _modules, function) do
-    T.error "No documentation for #{function} was found"
+  def h(module, function) 
+  when is_atom(module) and is_atom(function) do
+    case h_mod_fun(module, function) do
+      [] ->
+        T.error("Unknown function: #{inspect module}.#{function}")
+      docs ->
+        merge_helps(docs)
+    end
   end
-
-  defp check_for_empty_docs_in_modules(docs, _modules, _function) do
-    docs
-  end
-
 
   defp h_mod_fun(mod, fun)
   when is_atom(mod) and is_atom(fun) do
     find_fun_in_module_docs(mod, fun, Code.get_docs(mod, :docs))
   end
 
-  defp find_fun_in_module_docs(mod, fun, nil), do: nil
+  defp find_fun_in_module_docs(_mod, _fun, nil), do: nil
   defp find_fun_in_module_docs(mod, fun, docs) do
     for {{f, arity}, _line, _type, _args, doc} <- docs, fun == f, doc != false do
       h(mod, fun, arity)
     end
+  end
+
+  defp merge_helps(helps) do
+    (for %{ help: body } <- helps, do: body)
+    |> Enum.join("\n")
+    |> T.help
   end
 
   ##########################################################################
@@ -102,8 +113,19 @@ defmodule Wex.Util.Docs do
 
   def h(modules, function, arity) 
   when is_list(modules) and is_atom(function) and is_integer(arity) do
-    modules
-    |> Enum.map(&h_mod_fun_arity(&1, function, arity))
+    docs = modules
+           |> Enum.map(&h_mod_fun_arity(&1, function, arity))
+           |> Enum.filter(fn doc -> doc != [] end)
+           |> Enum.filter(fn %{ help: _ } -> true
+                             _            -> false
+                          end)
+
+    if docs == [] do
+      T.error "Unknown function #{function}/#{arity}"
+    else
+      merge_helps(docs)
+    end
+
   end
 
   def h(module, function, arity) 
@@ -144,8 +166,8 @@ defmodule Wex.Util.Docs do
   defp format_doc({{fun, _}, _line, kind, args, doc}) do
     args    = Enum.map_join(args, ", ", &format_doc_arg(&1))
     heading = "#{kind} #{fun}(#{args})"
-    doc     = doc || ""
-    T.help(T.heading(heading), doc)
+    doc = if doc, do: Earmark.to_html(doc), else: ""
+    T.help("<h1>#{heading}</h1>\n" <> doc)
   end
 
   defp format_doc_arg({:\\, _, [left, right]}) do

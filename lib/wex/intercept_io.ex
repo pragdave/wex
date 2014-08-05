@@ -35,7 +35,7 @@ defmodule Wex.InterceptIO do
   end
 
   defp io_request({:put_chars, chars}, %{ws: ws, device: device} = s) do
-    send ws, {device,  IO.chardata_to_string(chars)}
+    send ws, %{type: device,  text: IO.chardata_to_string(chars)}
     {:ok, s}
   end
 
@@ -262,7 +262,7 @@ defmodule Wex.InterceptIO do
   end
 
   defp io_reply(from, reply_as, reply) do
-    send from, {:io_reply, reply_as, reply}
+    send from, %{type: :io_reply, reply_as: reply_as, reply: reply}
   end
 
   defp to_reply(list) when is_list(list), do: IO.chardata_to_string(list)

@@ -41,7 +41,7 @@ defmodule Wex.Handlers.Eval do
     :erlang.group_leader(interceptor, self)
 
     # and standard error
-    unless stderr = Process.whereis(:standard_error) do
+    unless Process.whereis(:standard_error) do
       raise "could not find standard error"
     end
 
@@ -74,7 +74,8 @@ defmodule Wex.Handlers.Eval do
         {result, new_binding, env, scope} =
           :elixir.eval_forms(forms, state.binding, state.env, state.scope)
         
-         eval_ok_response(ws, inspect(result))
+         Logger.error(inspect result)
+         eval_ok_response(ws, result)
 
         { :noreply, %{state | env:           env,
                               scope:         scope, 
@@ -97,18 +98,29 @@ defmodule Wex.Handlers.Eval do
     end
   end
 
+  # help responses contain formatting...
+  defp eval_ok_response(ws, result = %{ help: body }) do
+    send ws, %{type: :help, text: body }
+    Logger.info "help response"
+  end
+
+  defp eval_ok_response(ws, result = %{ stderr: body }) do
+    send ws, %{type: :stderr, text: body }
+    Logger.info "stderr response"
+  end
+
   defp eval_ok_response(ws, result) do
-    send ws, {:eval_ok, result}
+    send ws, %{ type: :eval_ok, text: inspect(result)}
     Logger.info "OK response"
   end
 
   defp eval_partial_response(ws) do
-    send ws, {:eval_partial}
+    send ws, %{type: :eval_partial}
     Logger.info "partial response"
   end
 
   defp eval_error_response(ws, line, error, token) do
-    send ws, {:eval_error, line, error, token}
+    send ws, %{type: :stderr, line: line, error: error, token: token}
     Logger.info "error response"
   end
 

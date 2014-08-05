@@ -9,17 +9,22 @@ class @Eval
         @ws.addHandler "eval_partial", @eval_partial
         @ws.addHandler "stdout",       @eval_stdout
         @ws.addHandler "stderr",       @eval_stderr
+
+        @readline = new Readline @ip, @prompt
         
-        @ip.on "change", =>
-            @inputAvailable()
-
-
+        @ip.parent('form').on "submit", @inputAvailable
+        @ip.focus()
+    
     inputAvailable: (ev) => 
         val = @ip.val()
+        @readline.add_history(val)
         prompt = @prompt.html()
         @op.append "<div class=\"ip\">#{prompt} #{val}</div>"
         @ip.val ""
-        @ws.send "eval", val
+#        @ws.send "eval", val
+        ev.preventDefault()
+        ev.stopPropagation()
+        false
 
     eval_ok: (message) =>
         @prompt.html("wex>")

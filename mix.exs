@@ -36,8 +36,9 @@ defmodule Wex.Mixfile do
 
   defp deps do
     [
-     { :jazz, "~> 0.1" },
-     { :cowboy, "~> 0.10.0", github: "extend/cowboy" },
+     { :earmark, ">  0.0.0" },
+     { :jazz,    "~> 0.1" },
+     { :cowboy,  "~> 1.0.0", github: "extend/cowboy" },
     ]
   end
 end

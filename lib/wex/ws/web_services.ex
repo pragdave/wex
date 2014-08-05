@@ -1,4 +1,4 @@
-defmodule Wex.WS.Handler do
+defmodule Wex.WS.WebServices do
 
   @behaviour :cowboy_http_handler
   @behaviour :cowboy_websocket_handler
@@ -6,6 +6,7 @@ defmodule Wex.WS.Handler do
   use Jazz
 
   require Logger
+
 
   # HTTP side
 
@@ -25,6 +26,7 @@ defmodule Wex.WS.Handler do
   # WS side
 
   @protocol_header "sec-websocket-protocol"
+
   def websocket_init(_any, req, dispatcher) do
     Logger.info "ws secondary init"
     req = case :cowboy_req.parse_header(@protocol_header, req) do
@@ -49,13 +51,13 @@ defmodule Wex.WS.Handler do
   end
 
   # Here's the server sending to the browser...
-  def websocket_info(info = {type, text}, req, state) do
+  def websocket_info(info = %{type: type, text: text}, req, state) do
     Logger.info "Received info #{inspect info}"
     msg = JSON.encode! %{ type: Atom.to_string(type), text: text }
     { :reply, {:text, msg}, req, state }
   end
 
-  def websocket_info(info = {type}, req, state) do
+  def websocket_info(info = %{type: type}, req, state) do
     Logger.info "Received info #{inspect info}"
     msg = JSON.encode! %{ type: Atom.to_string(type) }
     { :reply, {:text, msg}, req, state }

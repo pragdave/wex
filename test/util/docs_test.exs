@@ -47,19 +47,19 @@ defmodule Util.DocsTest do
 
   test "h(Module, fn_no_docs)" do
     result = D.h(TM.WithDocs, :fn_no_doc)
-    assert [[help: [[heading: "def fn_no_doc(a, b)"], ""]]] = result
+    assert [[help: [[heading: "def fn_no_doc(a, b)"], nil]]] = result
   end
 
   test "h(Module, fn_with_docs)" do
     result = D.h(TM.WithDocs, :fn_with_doc)
-    assert [[help: [[heading: "def fn_with_doc(c, d \\\\ 1)"], "fn docs"]]] = result
+    assert [[help: [[heading: "def fn_with_doc(c, d \\\\ 1)"], "<p>fn docs</p>\n"]]] = result
   end
 
   test "h(Module, fn with multiple arities)" do
     result = D.h(TM.WithDocs, :fn_with_arities)
-    expect = [[help: [[heading: "def fn_with_arities()"],     "arity 0"]],
-              [help: [[heading: "def fn_with_arities(a)"],    ""]],
-              [help: [[heading: "def fn_with_arities(a, b)"], "arity 2"]]]
+    expect = [[help: [[heading: "def fn_with_arities()"],     "<p>arity 0</p>\n"]],
+              [help: [[heading: "def fn_with_arities(a)"],    nil]],
+              [help: [[heading: "def fn_with_arities(a, b)"], "<p>arity 2</p>\n"]]]
 
     assert expect == result
   end
@@ -75,12 +75,12 @@ defmodule Util.DocsTest do
 
   test "MFA for function with no docs" do
     result = D.h(TM.WithDocs, :fn_no_doc, 2)
-    assert [help: [[heading: "def fn_no_doc(a, b)"], ""]] = result
+    assert [help: [[heading: "def fn_no_doc(a, b)"], nil]] = result
   end
 
   test "MFA for function with docs" do
     result = D.h(TM.WithDocs, :fn_with_doc, 2)
-    assert [help: [[heading: "def fn_with_doc(c, d \\\\ 1)"], "fn docs"]] = result
+    assert [help: [[heading: "def fn_with_doc(c, d \\\\ 1)"], "<p>fn docs</p>\n"]] = result
   end
 
   ################

@@ -1,14 +1,12 @@
 <html>
 <head>
-  <script type="text/javascript" 
-          src="/scripts/lib/jquery.js"></script>
-  
-  <script type="text/javascript" 
-          src="/scripts/ours/eval.js"></script>
-  <script type="text/javascript" 
-          src="/scripts/ours/ws_driver.js"></script>
-  <script type="text/javascript" 
-          src="/scripts/ours/main.js"></script>
+
+  <link href="/css/readline.css" rel="stylesheet" type="text/css">
+
+  <link href="/scripts/lib/jquery-ui/jquery-ui.css" rel="stylesheet" type="text/css">
+  <link href="/scripts/lib/jquery-ui/jquery-ui.structure.css" rel="stylesheet" type="text/css">
+  <link href="/scripts/lib/jquery-ui/jquery-ui.theme.css" rel="stylesheet" type="text/css">
+
   <style type="text/css">
     #wex {
       padding: 2em;
@@ -26,7 +24,13 @@
         color: #a22;
     }
 
+    form {
+      width: 100%;
+      display: table;
+    }
+
     #input {
+      display: table-cell;
       box-shadow: none;
       border: none;
       background: #f0ffff;
@@ -34,16 +38,61 @@
       width: 90%;
       padding: 0.3em;
       font-weight: bold;
+      overflow: hidden;
     }
+
+    #prompt {
+      display: table-cell;
+      width: 1px;
+    }
+
+    #help {
+      width: 30%;
+      border: 1px solid blue;
+      background: #e8e8ff;
+      height: 400px;
+      position: absolute;
+      top: 0px;
+      right: 0px;
+    }
+
   </style>
 </head>
 <body>
   <section id="wex">
+    <div id="help">
+      This is help
+    </div>
     <div id="output">
     </div>
     <div>
-      <span id="prompt">wex></span> <input id="input">
+      <form>
+      <div id="prompt">wex></div> <input id="input">
+      </form>
     </div>
   </section>
+
+  <script type="text/javascript" 
+          src="/scripts/lib/jquery.js"></script>
+
+  <script type="text/javascript" 
+          src="/scripts/lib/jquery-ui/jquery-ui.js"></script>
+
+  <script type="text/javascript" 
+          src="/scripts/lib/jquery.hotkeys.js"></script>
+
+  <script type="text/javascript" 
+          src="/scripts/ours/util.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/readline.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/eval.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/help.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/ws_driver.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/main.js"></script>
+
 </body>
 </html>
