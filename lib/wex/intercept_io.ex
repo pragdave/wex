@@ -1,6 +1,6 @@
 defmodule Wex.InterceptIO do
   @moduledoc """
-  This module is a blatant ripoff of Elixirs StringIO module.
+  This module is a blatant ripoff of Elixir's StringIO module.
 
   We act as an IO device, but we forward output on to the
   websocket.
@@ -24,6 +24,8 @@ defmodule Wex.InterceptIO do
     {:ok, %{device: device, ws: ws}}
   end
 
+
+
   def handle_info({:io_request, from, reply_as, req}, s) do
     Logger.info "info1(#{inspect req})"
     {:noreply, io_request(from, reply_as, req, s)}
@@ -34,105 +36,153 @@ defmodule Wex.InterceptIO do
     super(msg, s)
   end
 
+
+
   defp io_request(from, reply_as, req, s) do
     Logger.info "one #{inspect req}"
-    {reply, s} = io_request(req, s)
+    {reply, s} = handle_request(req, s)
     Logger.info "one replying"
     io_reply(from, reply_as, to_reply(reply))
     Logger.info "one done"
     s
   end
 
-  defp io_request({:put_chars, chars}, s = %{ws: ws, device: device}) do
+
+  #######################
+  # {:put_chars, chars} #
+  #######################
+  defp handle_request({:put_chars, chars}, s = %{ws: ws, device: device}) do
     Logger.info "sending #{chars}"
     send ws, %{type: device,  text: IO.chardata_to_string(chars)}
     Logger.info "sent chars"
     {:ok, s}
   end
 
-  defp io_request({:put_chars, m, f, as}, s) do
+  ##########################
+  # {:put_chars, m, f, as} #
+  ##########################
+  defp handle_request({:put_chars, m, f, as}, s) do
     Logger.info "two"
     chars = apply(m, f, as)
-    io_request({:put_chars, chars}, s)
+    handle_request({:put_chars, chars}, s)
   end
 
-  defp io_request({:put_chars, _encoding, chars}, s) do
+  ##################################
+  # {:put_chars, _encoding, chars} #
+  ##################################
+  defp handle_request({:put_chars, _encoding, chars}, s) do
     Logger.info "put_chars #{inspect chars}"
-    io_request({:put_chars, chars}, s)
+    handle_request({:put_chars, chars}, s)
   end
 
-  defp io_request({:put_chars, _encoding, mod, func, args}, s) do
+  ############################################
+  # {:put_chars, _encoding, mod, func, args} #
+  ############################################
+  defp handle_request({:put_chars, _encoding, mod, func, args}, s) do
     Logger.info "four"
-    io_request({:put_chars, mod, func, args}, s)
+    handle_request({:put_chars, mod, func, args}, s)
   end
 
-  defp io_request({:get_chars, prompt, n}, s) when n >= 0 do
+  ###########################
+  # {:get_chars, prompt, n} #
+  ###########################
+  defp handle_request({:get_chars, prompt, n}, s) when n >= 0 do
     Logger.info "five"
-    io_request({:get_chars, :latin1, prompt, n}, s)
+    handle_request({:get_chars, :latin1, prompt, n}, s)
   end
 
-  defp io_request({:get_chars, encoding, prompt, n}, s) when n >= 0 do
+  #####################################
+  # {:get_chars, encoding, prompt, n} #
+  #####################################
+  defp handle_request({:get_chars, encoding, prompt, n}, s) when n >= 0 do
     Logger.info "six"
     get_chars(encoding, prompt, n, s)
   end
 
-  defp io_request({:get_line, prompt}, s) do
+  #######################
+  # {:get_line, prompt} #
+  #######################
+  defp handle_request({:get_line, prompt}, s) do
     Logger.info "seven"
-    io_request({:get_line, :latin1, prompt}, s)
+    handle_request({:get_line, :latin1, prompt}, s)
   end
 
-  defp io_request({:get_line, encoding, prompt}, s) do
+  #################################
+  # {:get_line, encoding, prompt} #
+  #################################
+  defp handle_request({:get_line, encoding, prompt}, s) do
     Logger.info "eight"
     get_line(encoding, prompt, s)
   end
 
-  defp io_request({:get_until, prompt, mod, fun, args}, s) do
+  ########################################
+  # {:get_until, prompt, mod, fun, args} #
+  ########################################
+  defp handle_request({:get_until, prompt, mod, fun, args}, s) do
     Logger.info "nine"
-
-    io_request({:get_until, :latin1, prompt, mod, fun, args}, s)
+    handle_request({:get_until, :latin1, prompt, mod, fun, args}, s)
   end
 
-  defp io_request({:get_until, encoding, prompt, mod, fun, args}, s) do
+  ##################################################
+  # {:get_until, encoding, prompt, mod, fun, args} #
+  ##################################################
+  defp handle_request({:get_until, encoding, prompt, mod, fun, args}, s) do
     Logger.info "ten"
-
     get_until(encoding, prompt, mod, fun, args, s)
   end
 
-  defp io_request({:get_password, encoding}, s) do
+  #############################
+  # {:get_password, encoding} #
+  #############################
+  defp handle_request({:get_password, encoding}, s) do
     Logger.info "a"
-
     get_line(encoding, "", s)
   end
 
-  defp io_request({:setopts, _opts}, s) do
+  #####################
+  # {:setopts, _opts} #
+  #####################
+  defp handle_request({:setopts, _opts}, s) do
     Logger.info "b"
-
     {{:error, :enotsup}, s}
   end
 
-  defp io_request(:getopts, s) do
+  ############
+  # :getopts #
+  ############
+  defp handle_request(:getopts, s) do
     Logger.info "c"
-
     {{:ok, [binary: true, encoding: :unicode]}, s}
   end
 
-  defp io_request({:get_geometry, :columns}, s) do
+  #############################
+  # {:get_geometry, :columns} #
+  #############################
+  defp handle_request({:get_geometry, :columns}, s) do
     Logger.info "d"
-
     {{:error, :enotsup}, s}
   end
 
-  defp io_request({:get_geometry, :rows}, s) do
+  ##########################
+  # {:get_geometry, :rows} #
+  ##########################
+  defp handle_request({:get_geometry, :rows}, s) do
     Logger.info "e"
     {{:error, :enotsup}, s}
   end
 
-  defp io_request({:requests, reqs}, s) do
+  #####################
+  # {:requests, reqs} #
+  #####################
+  defp handle_request({:requests, reqs}, s) do
     Logger.info "f"
-    io_requests(reqs, {:ok, s})
+    handle_requests(reqs, {:ok, s})
   end
 
-  defp io_request(_, s) do
+  #################
+  # Anything else #
+  #################
+  defp handle_request(_, s) do
     Logger.info "g"
     {{:error, :request}, s}
   end
@@ -262,15 +312,15 @@ defmodule Wex.InterceptIO do
     end
   end
 
-  ## io_requests
+  ## handle_requests
 
-  defp io_requests([r|rs], {:ok, s}) do
+  defp handle_requests([r|rs], {:ok, s}) do
     Logger.info "q"
 
-    io_requests(rs, io_request(r, s))
+    handle_requests(rs, handle_request(r, s))
   end
 
-  defp io_requests(_, result) do
+  defp handle_requests(_, result) do
     Logger.info "r"
     result
   end
