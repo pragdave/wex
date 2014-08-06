@@ -39,7 +39,7 @@ defmodule Wex.InterceptIO do
 
 
   defp io_request(from, reply_as, req, s) do
-    Logger.info "one #{inspect req}"
+    Logger.info "one #{inspect from} #{inspect req}"
     {reply, s} = handle_request(req, s)
     Logger.info "one replying"
     io_reply(from, reply_as, to_reply(reply))
@@ -349,7 +349,7 @@ defmodule Wex.InterceptIO do
 
   defp io_reply(from, reply_as, reply) do
     Logger.info "io_reply #{inspect [from, reply_as, reply]}"
-    send from, %{type: :io_reply, reply_as: reply_as, reply: reply}
+    send from, {:io_reply, reply_as, reply}
   end
 
   defp to_reply(list) when is_list(list), do: IO.chardata_to_string(list)
