@@ -4,16 +4,16 @@ class @Readline
         @history = []
         @search_offset = 0
         @history_offset = 0
-        @ip.
-          bind("keydown", "ctrl+p", @previous_line).
-          bind('keydown', 'up',     @previous_line).
-          bind('keydown', 'ctrl+n', @next_line).
-          bind('keydown', 'down',   @next_line).
-          bind('keydown', 'ctrl+r', @search_history).
-          bind('keydown', 'ctrl+g', @exit_search_history).
-          bind('keydown', 'ctrl+u', @clear_line).
-          bind('keydown', 'tab',    @tab_complete).
-          bind('keydown', "ctrl+l", @clear_screen)
+        @ip
+          .bind('keydown.down',   @next_line)
+          .bind('keydown.tab',    @tab_complete)
+          .bind('keydown.up',     @previous_line)
+          .bind('keydown.Ctrl_g', @exit_search_history)
+          .bind('keydown.Ctrl_k', @clear_line)
+          .bind('keydown.Ctrl_l', @clear_screen)
+          .bind('keydown.Ctrl_n', @next_line)
+          .bind("keydown.Ctrl_p", @previous_line)
+          .bind('keydown.Ctrl_r', @search_history)
 
     add_history: (line) ->
         @history.push(line)
@@ -37,7 +37,7 @@ class @Readline
 
 
     clear_line: =>
-        @ip.val(@io.val().slice(0, @ip.caret()))
+        @ip.val(@ip.val().slice(0, @ip.caret()))
         
     clear_screen: =>
         @screen.html('')

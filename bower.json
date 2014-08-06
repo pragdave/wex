@@ -1,0 +1,27 @@
+{
+  "name": "wex",
+  "version": "0.0.0",
+  "homepage": "https://github.com/pragdave/wex",
+  "authors": [
+    "pragdave <dave@pragprog.com>"
+  ],
+  "description": "Client side code for the Web-based IEx",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "priv/scripts/lib",
+    "deps",
+    "_build",
+    "test"
+  ],
+  "dependencies": {
+    "jquery": "~1.11.1",
+    "jquery-caret": "*",
+    "split-pane": "~0.4.0",
+    "ace-builds": "~1.1.5",
+    "jquery-ui": "~1.11.0",
+    "jquery.hotkeys": "*"
+  }
+}
