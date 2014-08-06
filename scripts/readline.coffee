@@ -1,6 +1,6 @@
 class @Readline
 
-    constructor: (@ip, @prompt) ->
+    constructor: (@ip, @prompt, @screen) ->
         @history = []
         @search_offset = 0
         @history_offset = 0
@@ -12,8 +12,8 @@ class @Readline
           bind('keydown', 'ctrl+r', @search_history).
           bind('keydown', 'ctrl+g', @exit_search_history).
           bind('keydown', 'ctrl+u', @clear_line).
-          bind('keydown', 'tab',    @tab_complete)
-
+          bind('keydown', 'tab',    @tab_complete).
+          bind('keydown', "ctrl+l", @clear_screen)
 
     add_history: (line) ->
         @history.push(line)
@@ -37,7 +37,10 @@ class @Readline
 
 
     clear_line: =>
-        @ip.val('')
+        @ip.val(@io.val().slice(0, @ip.caret()))
+        
+    clear_screen: =>
+        @screen.html('')
         
 
     search_history:  =>

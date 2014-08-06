@@ -10,7 +10,7 @@ class @Eval
         @ws.addHandler "stdout",       @eval_stdout
         @ws.addHandler "stderr",       @eval_stderr
 
-        @readline = new Readline @ip, @prompt
+        @readline = new Readline @ip, @prompt, @op
         
         @ip.parent('form').on "submit", @inputAvailable
         @ip.focus()
