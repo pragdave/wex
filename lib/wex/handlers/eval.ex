@@ -7,14 +7,13 @@ defmodule Wex.Handlers.Eval do
   """
 
   use     GenServer
-  require Logger
   alias   Wex.State
 
+  require Logger
   
   @name :handlers_eval
 
   def start_link(ws) do
-    Logger.info "START EVAL"
     result = GenServer.start_link(__MODULE__, ws, name: @name)
     Wex.Dispatcher.register_handler("eval", __MODULE__)
     result
@@ -35,26 +34,32 @@ defmodule Wex.Handlers.Eval do
 
   # We arrange for STDOUT/STDERR to be sent on to the browser
   def init(ws) do
+    
+    Logger.metadata in: "eval    "
 
     # capture stdout
     { :ok, interceptor } = Wex.InterceptIO.start_link({:stdout, ws})
     :erlang.group_leader(interceptor, self)
-
+   
     # and standard error
     unless Process.whereis(:standard_error) do
       raise "could not find standard error"
     end
-
-    Process.unregister(:standard_error)
+    
     { :ok, interceptor } = Wex.InterceptIO.start_link({:stderr, ws})
+    Process.unregister(:standard_error)
     Process.register(interceptor, :standard_error)
 
-    {:ok, create_state(ws) }
+    {:ok, create_state(ws)}
   end
   
 
   def handle_cast({:eval, msg}, state) do
-    eval(msg, state)
+    Logger.info("received cast #{inspect msg}")
+    Logger.info "calling eval"
+    result = eval(msg, state)
+    Logger.info("back from eval")
+    result
   end
 
 
@@ -69,42 +74,53 @@ defmodule Wex.Handlers.Eval do
 
   def eval(code, state = %State{ws: ws}) do
     code = state.partial_input <> code
-    case Code.string_to_quoted(code, [line: 99, file: "wex"]) do
+    Logger.info "evaluate #{inspect code}"
+    case Code.string_to_quoted(code, [line: 1, file: "wex"]) do
       {:ok, forms} ->
-        {result, new_binding, env, scope} =
-          :elixir.eval_forms(forms, state.binding, state.env, state.scope)
+        Logger.info "Parsed OK. Evaling..."
+        try do
+          {result, new_binding, env, scope} =
+            :elixir.eval_forms(forms, state.binding, state.env, state.scope)
         
-         Logger.error(inspect result)
-         eval_ok_response(ws, result)
+          Logger.info("result = #{inspect result}")
+          eval_ok_response(ws, result)
 
-        { :noreply, %{state | env:           env,
-                              scope:         scope, 
-                              binding:       new_binding, 
-                              partial_input: "" }}
+          { :noreply, %{state | env:           env,
+                                scope:         scope, 
+                                binding:       new_binding, 
+                                partial_input: "" }}
+
+        catch kind, error ->
+          eval_error_response(ws, format_exception(kind, error, System.stacktrace))
+          { :noreply, %{state | partial_input: "" } }
+        end
 
 
       # Update config.cache so that IEx continues to add new input to
       # the unfinished expression in `code`
       # %{config | cache: code} # 
       {:error, {_line, _error, ""}} ->
+        Logger.info "Continuation line"
         eval_partial_response(ws)
         { :noreply, %{state | partial_input: code} }
 
       # Encountered malformed expression
 
       {:error, {line, error, token}} ->
-        eval_error_response(ws, line, error, token)
-        { :noreply, state }
+        Logger.info "error: #{inspect [line, error, token]}"
+        eval_error_response(ws, "#{error} #{token}")
+        { :noreply, %{state | partial_input: "" } }
+
     end
   end
 
   # help responses contain formatting...
-  defp eval_ok_response(ws, result = %{ help: body }) do
+  defp eval_ok_response(ws,  %{ help: body }) do
     send ws, %{type: :help, text: body }
     Logger.info "help response"
   end
 
-  defp eval_ok_response(ws, result = %{ stderr: body }) do
+  defp eval_ok_response(ws, %{ stderr: body }) do
     send ws, %{type: :stderr, text: body }
     Logger.info "stderr response"
   end
@@ -119,9 +135,33 @@ defmodule Wex.Handlers.Eval do
     Logger.info "partial response"
   end
 
-  defp eval_error_response(ws, line, error, token) do
-    send ws, %{type: :stderr, line: line, error: error, token: token}
+  defp eval_error_response(ws, error) do
+    send ws, %{type: :stderr, text: error}
     Logger.info "error response"
+  end
+
+
+  defp format_exception(kind, reason, stacktrace) do
+    {reason, stacktrace} = normalize_exception(kind, reason, stacktrace)
+
+    Exception.format_banner(kind, reason, stacktrace)
+  end
+
+  defp normalize_exception(:error, :undef, [{Wex.Helpers, fun, arity, _}|t]) do
+    {%RuntimeError{message: "undefined function: #{format_function(fun, arity)}"}, t}
+  end
+
+  defp normalize_exception(_kind, reason, stacktrace) do
+    {reason, stacktrace}
+  end
+
+  defp format_function(fun, arity) do
+    cond do
+      is_list(arity) ->
+        "#{fun}/#{length(arity)}"
+      true ->
+        "#{fun}/#{arity}"
+    end
   end
 
 end

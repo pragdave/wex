@@ -8,6 +8,8 @@ defmodule Wex.InterceptIO do
   We also request input from the browser when reads are issued.
   """
 
+  require Logger
+
   use GenServer
 
   def start_link(args) do
@@ -17,90 +19,121 @@ defmodule Wex.InterceptIO do
   ## callbacks
 
   def init({device, ws}) do
+    Logger.metadata in: device
+    Logger.info "init"
     {:ok, %{device: device, ws: ws}}
   end
 
   def handle_info({:io_request, from, reply_as, req}, s) do
+    Logger.info "info1(#{inspect req})"
     {:noreply, io_request(from, reply_as, req, s)}
   end
 
   def handle_info(msg, s) do
+    Logger.info("info2(#{inspect msg}")
     super(msg, s)
   end
 
   defp io_request(from, reply_as, req, s) do
+    Logger.info "one #{inspect req}"
     {reply, s} = io_request(req, s)
+    Logger.info "one replying"
     io_reply(from, reply_as, to_reply(reply))
+    Logger.info "one done"
     s
   end
 
-  defp io_request({:put_chars, chars}, %{ws: ws, device: device} = s) do
+  defp io_request({:put_chars, chars}, s = %{ws: ws, device: device}) do
+    Logger.info "sending #{chars}"
     send ws, %{type: device,  text: IO.chardata_to_string(chars)}
+    Logger.info "sent chars"
     {:ok, s}
   end
 
   defp io_request({:put_chars, m, f, as}, s) do
+    Logger.info "two"
     chars = apply(m, f, as)
     io_request({:put_chars, chars}, s)
   end
 
   defp io_request({:put_chars, _encoding, chars}, s) do
+    Logger.info "put_chars #{inspect chars}"
     io_request({:put_chars, chars}, s)
   end
 
   defp io_request({:put_chars, _encoding, mod, func, args}, s) do
+    Logger.info "four"
     io_request({:put_chars, mod, func, args}, s)
   end
 
   defp io_request({:get_chars, prompt, n}, s) when n >= 0 do
+    Logger.info "five"
     io_request({:get_chars, :latin1, prompt, n}, s)
   end
 
   defp io_request({:get_chars, encoding, prompt, n}, s) when n >= 0 do
+    Logger.info "six"
     get_chars(encoding, prompt, n, s)
   end
 
   defp io_request({:get_line, prompt}, s) do
+    Logger.info "seven"
     io_request({:get_line, :latin1, prompt}, s)
   end
 
   defp io_request({:get_line, encoding, prompt}, s) do
+    Logger.info "eight"
     get_line(encoding, prompt, s)
   end
 
   defp io_request({:get_until, prompt, mod, fun, args}, s) do
+    Logger.info "nine"
+
     io_request({:get_until, :latin1, prompt, mod, fun, args}, s)
   end
 
   defp io_request({:get_until, encoding, prompt, mod, fun, args}, s) do
+    Logger.info "ten"
+
     get_until(encoding, prompt, mod, fun, args, s)
   end
 
   defp io_request({:get_password, encoding}, s) do
+    Logger.info "a"
+
     get_line(encoding, "", s)
   end
 
   defp io_request({:setopts, _opts}, s) do
+    Logger.info "b"
+
     {{:error, :enotsup}, s}
   end
 
   defp io_request(:getopts, s) do
+    Logger.info "c"
+
     {{:ok, [binary: true, encoding: :unicode]}, s}
   end
 
   defp io_request({:get_geometry, :columns}, s) do
+    Logger.info "d"
+
     {{:error, :enotsup}, s}
   end
 
   defp io_request({:get_geometry, :rows}, s) do
+    Logger.info "e"
     {{:error, :enotsup}, s}
   end
 
   defp io_request({:requests, reqs}, s) do
+    Logger.info "f"
     io_requests(reqs, {:ok, s})
   end
 
   defp io_request(_, s) do
+    Logger.info "g"
     {{:error, :request}, s}
   end
 
@@ -232,10 +265,13 @@ defmodule Wex.InterceptIO do
   ## io_requests
 
   defp io_requests([r|rs], {:ok, s}) do
+    Logger.info "q"
+
     io_requests(rs, io_request(r, s))
   end
 
   defp io_requests(_, result) do
+    Logger.info "r"
     result
   end
 
@@ -262,6 +298,7 @@ defmodule Wex.InterceptIO do
   end
 
   defp io_reply(from, reply_as, reply) do
+    Logger.info "io_reply #{inspect [from, reply_as, reply]}"
     send from, %{type: :io_reply, reply_as: reply_as, reply: reply}
   end
 

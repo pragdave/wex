@@ -28,6 +28,7 @@ defmodule Wex.WS.WebServices do
   @protocol_header "sec-websocket-protocol"
 
   def websocket_init(_any, req, dispatcher) do
+    Logger.metadata in: "ws      "
     Logger.info "ws secondary init"
     req = case :cowboy_req.parse_header(@protocol_header, req) do
             {:ok, :undefined, req} ->
@@ -36,7 +37,8 @@ defmodule Wex.WS.WebServices do
               :cowboy_req.set_resp_header("@protocol_header", protocol, req)
           end
 
-    # now we have a session, start up an evaluator
+    # now we have a session, start up the handlers
+    { :ok, _    } = Wex.Handlers.HelpSender.start_link(self)
     { :ok, eval } = Wex.Handlers.Eval.start_link(self)
 
     { :ok, req, %{dispatcher: dispatcher, eval: eval} }

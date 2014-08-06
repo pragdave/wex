@@ -2,6 +2,7 @@
 defmodule Wex.Util.Docs do
   @moduledoc false
 
+  require Logger
   alias Wex.Util.Text, as: T
 
   ########################################################
@@ -46,6 +47,7 @@ defmodule Wex.Util.Docs do
 
   defp handle_docs(module, { _, docs })
   when is_binary(docs) do
+    Logger.info(inspect(docs))
     T.help("<h1>#{inspect(module)}</h1>\n" <> Earmark.to_html(docs))
   end
 
@@ -164,10 +166,15 @@ defmodule Wex.Util.Docs do
   end
 
   defp format_doc({{fun, _}, _line, kind, args, doc}) do
-    args    = Enum.map_join(args, ", ", &format_doc_arg(&1))
-    heading = "#{kind} #{fun}(#{args})"
+    heading = format_function_header(kind, fun, args)
+    Logger.warn(inspect doc)
     doc = if doc, do: Earmark.to_html(doc), else: ""
     T.help("<h1>#{heading}</h1>\n" <> doc)
+  end
+
+  defp format_function_header(kind, fun, args) do
+    args    = Enum.map_join(args, ", ", &format_doc_arg(&1))
+    "#{kind} #{fun}(#{args})"
   end
 
   defp format_doc_arg({:\\, _, [left, right]}) do

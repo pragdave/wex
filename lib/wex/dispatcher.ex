@@ -35,13 +35,12 @@ defmodule Wex.Dispatcher do
   ##################
 
   def init(_args) do
+    Logger.metadata in: "dispatch"
     { :ok, _handlers = %{} }
   end
 
   def handle_call({:register_handler, msg_type, handler}, _from, handlers) do
-    Logger.info "Before: #{inspect handlers}"
     handlers = Dict.update(handlers, msg_type, [handler], &[handler|&1])
-    Logger.info "After: #{inspect handlers}"
     {:reply, :ok, handlers}
   end
 

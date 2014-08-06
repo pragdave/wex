@@ -21,7 +21,6 @@ defmodule Wex.WS.Rest do
   # Rest side
 
   def content_types_provided(req, state) do
-    Logger.info inspect(req)
 	  {[
 		  {"application/json", :autocomplete}
    	], 
@@ -31,16 +30,20 @@ defmodule Wex.WS.Rest do
 
   def autocomplete(req, state) do
     { a, _b } = :cowboy_req.qs_vals(req)
-    Logger.info inspect(a)
     { [ {"term", term} ], req } = :cowboy_req.qs_vals(req)
-    expand_param = term |> String.to_char_list |> Enum.reverse
-    result = case IEx.Autocomplete.expand(expand_param) do
+    result = Wex.Utility.Autocomplete.expand(term)
+    Logger.info "#{inspect(a)} -> #{inspect result}"
+    result = case Wex.Utility.Autocomplete.expand(term) do
       { :no, _, _ } ->
         []
-      { :yes, word, [] } when is_list(word) ->
-        [ List.to_string(word) ]
-      { :yes, [], words } when is_list(words) ->
-        for word <- words, do: List.to_string(word)
+      {:yes, "", {:send_doc, mod, fun}} ->
+        docs = Wex.Util.Docs.h(mod, String.to_atom(fun))
+        Wex.Handlers.HelpSender.send_help(docs)
+        []
+      { :yes, word, [] } when is_binary(word) ->
+        [ word ]
+      { :yes, "", words } when is_list(words) ->
+        words
     end
     { Jazz.encode!(result), req, state }
   end

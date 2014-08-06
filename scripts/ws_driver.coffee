@@ -2,12 +2,11 @@ class @WsDriver
 
     constructor: (readyfn) ->
         @handlers = {}
-        readyfn(@)
-        # @ws = new WebSocket("ws://127.0.0.1:8080/ws")
-        # @ws.onopen = =>
-        #     @ws.onmessage = (event) =>
-        #         @handleMessage(JSON.parse(event.data))
-        #     readyfn(@)
+        @ws = new WebSocket("ws://127.0.0.1:8080/ws")
+        @ws.onopen = =>
+            @ws.onmessage = (event) =>
+                @handleMessage(JSON.parse(event.data))
+            readyfn(@)
 
     addHandler: (type, handler) ->
         @handlers[type] = handler
@@ -17,6 +16,8 @@ class @WsDriver
 
 
     handleMessage: (message) ->
+        console.log "Received ws message"
+        console.dir(message)
         callback = @handlers[message.type]
         if callback
             callback(message)

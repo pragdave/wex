@@ -14,14 +14,15 @@ class @Eval
         
         @ip.parent('form').on "submit", @inputAvailable
         @ip.focus()
+        @ws.send "eval", "\"Wex \#{System.version}\""
     
     inputAvailable: (ev) => 
         val = @ip.val()
         @readline.add_history(val)
         prompt = @prompt.html()
-        @op.append "<div class=\"ip\">#{prompt} #{val}</div>"
+        @op.append "<div class=\"iprompt\">#{prompt}</div><div class=\"ip\">#{val}</div>"
         @ip.val ""
-#        @ws.send "eval", val
+        @ws.send "eval", val
         ev.preventDefault()
         ev.stopPropagation()
         false
@@ -31,12 +32,14 @@ class @Eval
         @op.append "<div class=\"value\">#{message.text}</div>"
 
     eval_partial: (message) =>
-        @prompt.html("...>")
+        @prompt.html("<span style=\"visibility: hidden\">wex</span>&#x22ee;")
 
     eval_stdout: (message) =>
+        @prompt.html("wex>")
         @op.append "<div class=\"stdout\">#{message.text}</div>"
         
     eval_stderr: (message) =>
+        @prompt.html("wex>")
         @op.append "<div class=\"stderr\">#{message.text}</div>"
         
 

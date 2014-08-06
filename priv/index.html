@@ -1,73 +1,25 @@
+<!DOCTYPE html>
 <html>
 <head>
-
+  <meta charset="utf-8"> 
   <link href="/css/readline.css" rel="stylesheet" type="text/css">
+  <link href="/css/wex.css"      rel="stylesheet" type="text/css">
 
   <link href="/scripts/lib/jquery-ui/jquery-ui.css" rel="stylesheet" type="text/css">
   <link href="/scripts/lib/jquery-ui/jquery-ui.structure.css" rel="stylesheet" type="text/css">
   <link href="/scripts/lib/jquery-ui/jquery-ui.theme.css" rel="stylesheet" type="text/css">
 
-  <style type="text/css">
-    #wex {
-      padding: 2em;
-    }
-
-    .value {
-        color: #448;
-    }
-
-    .stdout {
-        color: #484;
-    }
-
-    .stderr {
-        color: #a22;
-    }
-
-    form {
-      width: 100%;
-      display: table;
-    }
-
-    #input {
-      display: table-cell;
-      box-shadow: none;
-      border: none;
-      background: #f0ffff;
-      outline: none;
-      width: 90%;
-      padding: 0.3em;
-      font-weight: bold;
-      overflow: hidden;
-    }
-
-    #prompt {
-      display: table-cell;
-      width: 1px;
-    }
-
-    #help {
-      width: 30%;
-      border: 1px solid blue;
-      background: #e8e8ff;
-      height: 400px;
-      position: absolute;
-      top: 0px;
-      right: 0px;
-    }
-
-  </style>
 </head>
 <body>
   <section id="wex">
-    <div id="help">
+    <div id="help" title="Wex Help" style="display: none">
       This is help
     </div>
     <div id="output">
     </div>
     <div>
       <form>
-      <div id="prompt">wex></div> <input id="input">
+      <div id="prompt">wex></div> <input id="input" autocomplete="off">
       </form>
     </div>
   </section>

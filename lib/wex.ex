@@ -2,8 +2,6 @@ defmodule Wex do
   use Application
   require Logger
 
-  import Supervisor.Spec
-
   def start, do: start([], [])
 
   def start(_,_) do
