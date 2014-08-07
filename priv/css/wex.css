@@ -1,4 +1,8 @@
-body {
+html, body {
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
     font-family: 'Lucida Sans Unicode', 'Lucida Grande', sans-serif; 
     line-height: 1.5em;
 }
@@ -6,6 +10,8 @@ body {
 
 #wex {
   padding: 2em;
+  height: 100%;
+  min-height: 100%;
 }
 
 .value {
@@ -33,7 +39,7 @@ form {
   outline: none;
   width: 90%;
   font-weight: bold;
-  overflow: hidden;
+  overflow: scroll;
   font-size: 100%;
 }
 
@@ -102,5 +108,19 @@ form {
 
 #help p {
     margin: 0.2em 0em 0.2em 0em;
+}
+
+#frame {
+    height: 100%;
+    min-height: 100%;
+}
+
+#editor {
+    background: #080;
+}
+
+#interaction {
+    background: #800;
+    min-height: 20%;
 }
 

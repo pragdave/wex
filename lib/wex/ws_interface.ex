@@ -5,9 +5,10 @@ defmodule Wex.WSInterface do
     routes = :cowboy_router.compile([
         # {URIHost, list({URIPath, Handler, Opts})}
         {:_, [
-          {'/ws',            Wex.WS.WebServices, dispatcher_pid},
-          {'/autocomplete',  Wex.WS.Rest,        dispatcher_pid},
-          {'/[...]',         :cowboy_static, {:priv_dir, :wex, ""}},
+          {'/ws',                   Wex.Web.WebSocket,          dispatcher_pid},
+          {'/api/v1/autocomplete',  Wex.Web.Rest.Autocomplete,  nil},
+
+          {'/[...]', :cowboy_static, {:priv_dir, :wex, ""}},
         ]},
     ])
     

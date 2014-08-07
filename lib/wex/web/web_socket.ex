@@ -1,4 +1,4 @@
-defmodule Wex.WS.WebServices do
+defmodule Wex.Web.WebSocket do
 
   @behaviour :cowboy_http_handler
   @behaviour :cowboy_websocket_handler

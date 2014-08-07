@@ -9,19 +9,34 @@
         rel="stylesheet" type="text/css">
   <link href="/scripts/lib/jquery-ui/themes/ui-lightness/theme.css"
         rel="stylesheet" type="text/css">
+  <link href="/scripts/lib/jquery.splitter/css/jquery.splitter.css"
+        rel="stylesheet" type="text/css">
+
 
 </head>
 <body>
+  <div id="help" title="Wex Help" style="display: none">
+    This is help
+  </div>
   <section id="wex">
-    <div id="help" title="Wex Help" style="display: none">
-      This is help
-    </div>
-    <div id="output">
-    </div>
-    <div>
-      <form>
-      <div id="prompt">wex></div> <input id="input" autocomplete="off">
-      </form>
+    <div id="frame">
+      <div class="" id="editor">
+        <div id="filetree">
+          File tree
+        </div>
+        <div id="ace">
+          Ace
+        </div>
+      </div>
+      <div id="interaction">
+        <div id="output">
+        </div>
+        <div>
+          <form>
+            <div id="prompt">wex></div> <input id="input" autocomplete="off">
+          </form>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -38,6 +53,19 @@
           src="/scripts/lib/jquery.hotkeys/jquery.hotkeys.js"></script>
 
   <script type="text/javascript" 
+          src="/scripts/lib/jquery.splitter/js/jquery.splitter-0.14.0.js"></script>
+
+  <script type="text/javascript" charset="utf-8"
+          src="/scripts/lib/ace-builds/src-noconflict/ace.js"></script>
+
+<!--
+  <script type="text/javascript" charset="utf-8"
+          src="/scripts/other/elixir.js"></script>
+
+  <script type="text/javascript" charset="utf-8"
+          src="/scripts/other/elixir-highlight-rules.js"></script>
+-->
+  <script type="text/javascript" 
           src="/scripts/ours/util.js"></script>
   <script type="text/javascript" 
           src="/scripts/ours/readline.js"></script>
@@ -47,6 +75,17 @@
           src="/scripts/ours/help.js"></script>
   <script type="text/javascript" 
           src="/scripts/ours/ws_driver.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/windows.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/editor.js"></script>
+
+  <script type="text/javascript" 
+          src="/scripts/ours/files/filedrop.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/files/dir.js"></script>
+
+
   <script type="text/javascript" 
           src="/scripts/ours/main.js"></script>
 

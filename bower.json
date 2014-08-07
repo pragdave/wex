@@ -22,6 +22,7 @@
     "split-pane": "~0.4.0",
     "ace-builds": "~1.1.5",
     "jquery-ui": "~1.11.0",
-    "jquery.hotkeys": "*"
+    "jquery.hotkeys": "*",
+    "jquery.splitter": "~0.14.0"
   }
 }
