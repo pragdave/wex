@@ -4,7 +4,7 @@ $ ->
         limit: 100
         position: '75%'
 
-    $('#editor').split
+    $('#editor-and-tree').split
         orientation: 'vertical'
         limit: 100
         position: '20%'

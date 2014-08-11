@@ -7,6 +7,9 @@ defmodule Wex.WSInterface do
         {:_, [
           {'/ws',                   Wex.Web.WebSocket,          dispatcher_pid},
           {'/api/v1/autocomplete',  Wex.Web.Rest.Autocomplete,  nil},
+          {'/api/v1/dirlist',       Wex.Web.Rest.Dirlist,       nil},
+
+          {'/api/v1/file/load',     Wex.Web.Rest.LoadFile,      nil},
 
           {'/[...]', :cowboy_static, {:priv_dir, :wex, ""}},
         ]},

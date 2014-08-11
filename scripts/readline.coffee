@@ -85,7 +85,7 @@ class @Readline
         (request, response) => response(@get_matching_history(request.term))
 
     autocomplete_elixir_source: ->
-        "/autocomplete"
+        "/api/v1/autocomplete"
 
     check_for_single_element_response: (event, response) =>
         switch response.content.length

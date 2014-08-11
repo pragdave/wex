@@ -7,9 +7,13 @@
 
   <link href="/scripts/lib/jquery-ui/themes/ui-lightness/jquery-ui.css"
         rel="stylesheet" type="text/css">
+<!--
   <link href="/scripts/lib/jquery-ui/themes/ui-lightness/theme.css"
         rel="stylesheet" type="text/css">
+-->
   <link href="/scripts/lib/jquery.splitter/css/jquery.splitter.css"
+        rel="stylesheet" type="text/css">
+  <link href="/scripts/lib/jqtree/jqtree.css"
         rel="stylesheet" type="text/css">
 
 
@@ -20,12 +24,16 @@
   </div>
   <section id="wex">
     <div id="frame">
-      <div class="" id="editor">
+      <div class="" id="editor-and-tree">
         <div id="filetree">
           File tree
         </div>
-        <div id="ace">
-          Ace
+        <div id="editor">
+          <div id="tabs">
+            <ul id="tab-list">
+            </ul>
+          </div>
+          <div id="ace"></div>
         </div>
       </div>
       <div id="interaction">
@@ -55,6 +63,9 @@
   <script type="text/javascript" 
           src="/scripts/lib/jquery.splitter/js/jquery.splitter-0.14.0.js"></script>
 
+  <script type="text/javascript" 
+          src="/scripts/lib/jqtree/tree.jquery.js"></script>
+
   <script type="text/javascript" charset="utf-8"
           src="/scripts/lib/ace-builds/src-noconflict/ace.js"></script>
 
@@ -68,6 +79,8 @@
   <script type="text/javascript" 
           src="/scripts/ours/util.js"></script>
   <script type="text/javascript" 
+          src="/scripts/ours/wex_event.js"></script>
+  <script type="text/javascript" 
           src="/scripts/ours/readline.js"></script>
   <script type="text/javascript" 
           src="/scripts/ours/eval.js"></script>
@@ -76,14 +89,24 @@
   <script type="text/javascript" 
           src="/scripts/ours/ws_driver.js"></script>
   <script type="text/javascript" 
+          src="/scripts/ours/rest_driver.js"></script>
+  <script type="text/javascript" 
           src="/scripts/ours/windows.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/editor_file_list.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/editor_file_list_view.js"></script>
   <script type="text/javascript" 
           src="/scripts/ours/editor.js"></script>
 
   <script type="text/javascript" 
-          src="/scripts/ours/files/filedrop.js"></script>
+          src="/scripts/ours/files.js"></script>
   <script type="text/javascript" 
           src="/scripts/ours/files/dir.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/files/dir_view.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/files/file.js"></script>
 
 
   <script type="text/javascript" 

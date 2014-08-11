@@ -115,8 +115,108 @@ form {
     min-height: 100%;
 }
 
+
+ul.jqtree-tree li.jqtree-selected > .jqtree-element,
+ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
+    font-weight: bold;
+    background: none !IMPORTANT;
+}
+
+/*
+#editor-and-tree {
+    background: #0a0;
+}
+
 #editor {
-    background: #080;
+    background: #a00;
+}
+*/
+
+
+
+#tabs {
+    background: #e0e0ff;
+    height: 30px;
+    width:100%;
+    display:inline-block;
+    position: absolute;
+}
+
+#tabs ul {
+    margin-top: 6px;
+    font-size: 70%;
+}
+
+#tab-list:after {
+    display:block;
+    clear:both;
+    content:'';
+}
+ 
+#tab-list li {
+    margin:0px -4px;
+    float:left;
+    list-style:none;
+    position: relative;
+}
+ 
+#tab-list a {
+    padding:       2px 5px;
+    display:       inline-block;
+    border-radius: 6px 6px 0px 0px;
+    font-weight:   600;
+    color:         #4c4c4c;
+    transition:    all linear 0.15s;
+    border:        2px solid #27a;
+    text-decoration: none;
+    -webkit-box-shadow: 3px 3px 5px 0px rgba(0, 0, 0.4, 0.7);
+    -moz-box-shadow:    3px 3px 5px 0px rgba(0, 0, 0.4, 0.7);
+    box-shadow:         3px 3px 5px 0px rgba(0, 0, 0.4, 0.7);
+    background-color: #97BDD6;
+    background: -webkit-gradient(linear, left top, left bottom, from(#BEE0F5), to(#89AFCA));
+    background: -moz-linear-gradient(top, #BEE0F5, #89AFCA);
+    background: -ms-linear-gradient(top, #BEE0F5, #89AFCA);
+    background: -o-linear-gradient(top, #BEE0F5, #89AFCA);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+
+}
+ 
+#tab-list a:hover {
+    background:#a7cce5;
+    text-decoration:none;
+}
+
+
+#tab-list li.active {
+    z-index: 1;
+}
+ 
+#tab-list li.active a, #tab-list li.active a:hover {
+    background:#e0e0f8;
+    color:#4c4c4c;
+}
+
+
+
+
+
+#ace {
+   position: absolute;
+   top: 30px;
+   right: 0;
+   bottom: 0;
+   left: 0; 
+   z-order: 2;
+}
+
+#filetree {
+    background: #e0e0ff;
+    font-size: 70%;
+}
+
+#filetree a.jqtree-toggler {
+    font-size: 40%;
+    color:     #aaa;
 }
 
 #interaction {

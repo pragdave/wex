@@ -5,6 +5,7 @@ defmodule Wex do
   def start, do: start([], [])
 
   def start(_,_) do
+    Logger.add_translator {CowboyTranslator, :translate}    
     Logger.info "Starting"
 
     { :ok, dispatcher_pid } = Wex.Dispatcher.start_link()
