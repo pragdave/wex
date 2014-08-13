@@ -28,26 +28,41 @@ html, body {
 
 form {
   width: 100%;
-  display: table;
+}
+
+table#interacter {
+    width: 100%;
 }
 
 #input {
-  display: table-cell;
   box-shadow: none;
   border: none;
-  background: #e0f0f0;
+  background: #ffffff;
   outline: none;
-  width: 90%;
+  width: 95%;
+  max-width: 95%;
+  min-width: 95%;
+  padding: 0px;
+}
+
+#input input {
+  margin: 0px;
+  width: 99%;
   font-weight: bold;
   overflow: scroll;
   font-size: 100%;
 }
 
+#prompt-cell {
+    width: 3em;
+}
+
 #prompt {
-  display: table-cell;
   width: 3em;
+  max-width: 3em;
+  min-width: 3em;
   padding-right: 0.3em;
-  color: #aaa;
+  color: #888;
 }
 
 
@@ -140,6 +155,7 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
     width:100%;
     display:inline-block;
     position: absolute;
+    overflow: hidden;
 }
 
 #tabs ul {
@@ -219,8 +235,14 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
     color:     #aaa;
 }
 
-#interaction {
-    background: #800;
+#interaction-pane {
     min-height: 20%;
 }
+
+#interaction {
+    background: #e0ffe0;
+    overflow: auto;
+    height: 100%;
+}
+
 

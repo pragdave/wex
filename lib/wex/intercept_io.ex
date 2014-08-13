@@ -16,12 +16,17 @@ defmodule Wex.InterceptIO do
     :gen_server.start_link(__MODULE__, args, [])
   end
 
+  def compiling(device, flag) do
+    :io.setopts(device, [ compiling: flag ])
+  end
+    
+
   ## callbacks
 
   def init({device, ws}) do
     Logger.metadata in: device
     Logger.info "init"
-    {:ok, %{device: device, ws: ws}}
+    {:ok, %{device: device, ws: ws, compiling: false}}
   end
 
 
@@ -51,9 +56,9 @@ defmodule Wex.InterceptIO do
   #######################
   # {:put_chars, chars} #
   #######################
-  defp handle_request({:put_chars, chars}, s = %{ws: ws, device: device}) do
+  defp handle_request({:put_chars, chars}, s = %{ws: ws}) do
     Logger.info "sending #{chars}"
-    send ws, %{type: device,  text: IO.chardata_to_string(chars)}
+    send ws, %{type: device_name(s),  text: IO.chardata_to_string(chars)}
     Logger.info "sent chars"
     {:ok, s}
   end
@@ -142,8 +147,13 @@ defmodule Wex.InterceptIO do
   #####################
   # {:setopts, _opts} #
   #####################
-  defp handle_request({:setopts, _opts}, s) do
-    Logger.info "b"
+  defp handle_request({:setopts, [compiling: flag]}, s) do
+    Logger.info "setopts: COMPILING #{inspect flag}"
+    {:ok, %{s| compiling: flag} }
+  end
+
+  defp handle_request({:setopts, opts}, s) do
+    Logger.info "setopts: #{inspect(opts)}"
     {{:error, :enotsup}, s}
   end
 
@@ -354,5 +364,14 @@ defmodule Wex.InterceptIO do
 
   defp to_reply(list) when is_list(list), do: IO.chardata_to_string(list)
   defp to_reply(other), do: other
+
+
+  defp device_name(%{device: device, compiling: false}) do
+    device
+  end
+
+  defp device_name(%{device: device, compiling: true}) do
+    "compile_#{device}" |> String.to_atom
+  end
 
 end

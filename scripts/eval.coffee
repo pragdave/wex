@@ -1,9 +1,10 @@
 class @Eval
 
     constructor: (@ws) ->
-        @ip     = $("#input")
+        @ip     = $("#input-field")
         @op     = $("#output")
         @prompt = $("#prompt")
+        @pane   = $("#interaction")
         
         @ws.addHandler "eval_ok",      @eval_ok
         @ws.addHandler "eval_partial", @eval_partial
@@ -12,7 +13,7 @@ class @Eval
 
         @readline = new Readline @ip, @prompt, @op
         
-        @ip.parent('form').on "submit", @inputAvailable
+        @ip.parents('form').on "submit", @inputAvailable
         @ip.focus()
         @ws.send "eval", "\"Wex \#{System.version}\""
     
@@ -30,18 +31,23 @@ class @Eval
 
     eval_ok: (message) =>
         @prompt.html("wex>")
-        @op.append "<div class=\"value\">#{@escape(message.text)}</div>"
+        @write "<div class=\"value\">#{@escape(message.text)}</div>"
 
     eval_partial: (message) =>
         @prompt.html("<span style=\"visibility: hidden\">wex</span>&#x22ee;")
 
     eval_stdout: (message) =>
         @prompt.html("wex>")
-        @op.append "<div class=\"stdout\">#{@escape(message.text)}</div>"
+        @write "<div class=\"stdout\">#{@escape(message.text)}</div>"
         
     eval_stderr: (message) =>
         @prompt.html("wex>")
-        @op.append "<div class=\"stderr\">#{@escape(message.text)}</div>"
+        @write "<div class=\"stderr\">#{@escape(message.text)}</div>"
+
+    write: (msg) ->
+        @op.append msg
+        @pane.scrollTop(@pane[0].scrollHeight)
         
     escape: (message) ->
-        $('<div/>').text(message).html()        
+        $('<div/>').text(message).html()
+

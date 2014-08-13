@@ -38,10 +38,9 @@ defmodule Wex.Web.WebSocket do
           end
 
     # now we have a session, start up the handlers
-    { :ok, _    } = Wex.Handlers.HelpSender.start_link(self)
-    { :ok, eval } = Wex.Handlers.Eval.start_link(self)
+    {:ok, handlers} = Wex.Handlers.Supervisor.start_link(self)
 
-    { :ok, req, %{dispatcher: dispatcher, eval: eval} }
+    { :ok, req, %{dispatcher: dispatcher, handlers: handlers} }
   end
 
   # Dispatch generic message to the handler
@@ -65,9 +64,9 @@ defmodule Wex.Web.WebSocket do
     { :reply, {:text, msg}, req, state }
   end
 
-  def websocket_terminate(_reason, _req, _state) do
+  def websocket_terminate(_reason, _req, %{handlers: handlers}) do
     Logger.info "Received terminate"
-    :ok
+    Process.exit(self(), :shutdown)
   end
 
 

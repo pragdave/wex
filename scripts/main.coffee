@@ -5,10 +5,14 @@ $ ->
     new WsDriver (ws) ->
         new Eval(ws)
         new Help(ws)
-        window.mydir = new Files.Dir(ws, rest)
-        window.myfile = new Files.File(rest)
-        new Files.DirView($("#filetree"), window.mydir)
-        window.editor = new Editor(window.myfile)
+        
+        mydir  = new Files.DirList(ws, rest)
+        myfile = new Files.FileLoader(rest)
+        new Files.DirView($("#filetree"), mydir)
 
         new EditorFileListView(EditorFileList)
-        window.mydir.get_listing("/Users/dave/Play/wex/lib")
+
+        editor = new Editor(myfile, rest, ws).editor
+        editor.setTheme("ace/theme/solarized_light")
+
+#        mydir.get_listing("/Users/dave/Play/wex/lib")

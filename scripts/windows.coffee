@@ -1,3 +1,10 @@
+class @Windows
+
+    $(window).bind "keydown.f1", @one_pane
+
+    @one_pane: ->
+        alert("one")
+
 $ ->
     $('#frame').split
         orientation: 'horizontal'

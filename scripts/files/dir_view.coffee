@@ -26,18 +26,21 @@ class @Files.DirView
     ###########
     
     add_entry: (entry, container) ->
-        path = if entry.relative_path == ""
+        name = if entry.relative_path == ""
                    entry.full_path
                else
                    entry.relative_path
-        node = { label: path, id: entry.full_path, type: entry.type }
-
+                   
         if entry.type == "dir"
-            @add_entries(entry.entries, node)
+            node = new Files.Dir(name,
+                                 full_path,
+                                 children_of(entry.entries))
+        else
+            node = new Files.file(name, full_path)
 
         node
         
-    add_entries: (tree, container) ->
-        container.children = (@add_entry(entry, container) for entry in tree)
+    children_of: (tree) ->
+        (@add_entry(entry, container) for entry in tree)
 
            

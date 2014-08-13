@@ -5,6 +5,7 @@ class @WexEvent
     @filelist_updated    = "wex.filelist_updated"
     @load_file           = "wex.load_file"
     @open_file_in_editor = "wex.open_file_in_editor"
+    @update_errors       = "wex.update_errors"
         
     @trigger: (name, args...) ->
         console.log("Trigger #{name}")

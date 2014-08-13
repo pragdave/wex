@@ -28,6 +28,8 @@ defmodule Wex.Handlers.HelpSender do
   ##################
 
   def init(ws) do
+    Logger.metadata in: "help sender"
+    Logger.info "starting"
     {:ok, ws }
   end
   
@@ -36,6 +38,11 @@ defmodule Wex.Handlers.HelpSender do
     Logger.info "sending it"
     send ws, %{type: :help, text: help_text }
     {:noreply, ws}
+  end
+
+  def terminate(reason, _state) do
+    Logger.info("Terminate help sender")
+    :ok
   end
 
 end

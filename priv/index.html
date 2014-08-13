@@ -36,13 +36,20 @@
           <div id="ace"></div>
         </div>
       </div>
-      <div id="interaction">
-        <div id="output">
-        </div>
-        <div>
-          <form>
-            <div id="prompt">wex></div> <input id="input" autocomplete="off">
-          </form>
+      <div id="interaction-pane">
+        <div id="interaction">
+          <div id="output">
+          </div>
+          <div>
+            <form>
+              <table id="interacter">
+                <tr>
+                  <td id="prompt-cell"><div id="prompt">wex></div></td>
+                  <td id="input"><input id="input-field" autocomplete="off"></td>
+                </tr>
+              </table>
+            </form>
+          </div>
         </div>
       </div>
     </div>
@@ -97,6 +104,8 @@
   <script type="text/javascript" 
           src="/scripts/ours/editor_file_list_view.js"></script>
   <script type="text/javascript" 
+          src="/scripts/ours/compiler.js"></script>
+  <script type="text/javascript" 
           src="/scripts/ours/editor.js"></script>
 
   <script type="text/javascript" 
@@ -104,9 +113,13 @@
   <script type="text/javascript" 
           src="/scripts/ours/files/dir.js"></script>
   <script type="text/javascript" 
+          src="/scripts/ours/files/dir_list.js"></script>
+  <script type="text/javascript" 
           src="/scripts/ours/files/dir_view.js"></script>
   <script type="text/javascript" 
           src="/scripts/ours/files/file.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/files/file_loader.js"></script>
 
 
   <script type="text/javascript" 
