@@ -22,37 +22,54 @@
   <div id="help" title="Wex Help" style="display: none">
     This is help
   </div>
-  <section id="wex">
-    <div id="frame">
-      <div class="" id="editor-and-tree">
-        <div id="filetree">
-          File tree
-        </div>
-        <div id="editor">
-          <div id="tabs">
-            <ul id="tab-list">
-            </ul>
-          </div>
-          <div id="ace"></div>
-        </div>
+  <section id="frame" style="display: none">
+
+    <section id="tools" class="ui-layout-north">
+      <div id="toolbar" class="ui-widget-header ui-corner-all">
+        <span id="select-layout">
+          <input type="radio" 
+                 id="layout1" 
+                 name="select-layout" 
+                 checked="checked"><label for="layout1">Wex Window</label>
+          <input type="radio" 
+                 id="layout2" 
+                 name="select-layout"><label for="layout2">Wex+Sandbox</label>
+          <input type="radio" 
+                 id="layout3" 
+                 name="select-layout"><label for="layout3">All</label>
+        </span>
       </div>
-      <div id="interaction-pane">
-        <div id="interaction">
-          <div id="output">
-          </div>
-          <div>
-            <form>
-              <table id="interacter">
-                <tr>
-                  <td id="prompt-cell"><div id="prompt">wex></div></td>
-                  <td id="input"><input id="input-field" autocomplete="off"></td>
-                </tr>
-              </table>
-            </form>
-          </div>
-        </div>
+    </section>
+
+    <section id="filetree" class="ui-layout-west">
+      File tree
+    </section>
+
+    <div id="editor" class="ui-layout-center">
+      <div id="tabs">
+        <ul id="tab-list">
+        </ul>
       </div>
+      <div id="ace"></div>
     </div>
+
+    <section id="interaction-pane" class="ui-layout-south">
+      <div id="interaction">
+        <div id="output">
+        </div>
+        <div>
+          <form>
+            <table id="interacter">
+              <tr>
+                <td id="prompt-cell"><div id="prompt">wex></div></td>
+                <td id="input"><input id="input-field" autocomplete="off"></td>
+              </tr>
+            </table>
+          </form>
+        </div>
+      </div>
+    </section>
+
   </section>
 
   <script type="text/javascript" 
@@ -68,7 +85,7 @@
           src="/scripts/lib/jquery.hotkeys/jquery.hotkeys.js"></script>
 
   <script type="text/javascript" 
-          src="/scripts/lib/jquery.splitter/js/jquery.splitter-0.14.0.js"></script>
+          src="/scripts/lib/jquery.layout.js"></script>
 
   <script type="text/javascript" 
           src="/scripts/lib/jqtree/tree.jquery.js"></script>

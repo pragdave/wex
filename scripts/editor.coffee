@@ -79,7 +79,7 @@ class @Editor
         @trigger_compilation()
 
     set_timer: =>
-        @timer = setTimeout @trigger_compilation, 1000
+        @timer = setTimeout @trigger_compilation, 600
 
     reset_timer: =>
         clearTimeout @timer

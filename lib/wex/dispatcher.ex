@@ -40,13 +40,15 @@ defmodule Wex.Dispatcher do
   end
 
   def handle_call({:register_handler, msg_type, handler}, _from, handlers) do
-    handlers = Dict.update(handlers, msg_type, [handler], &[handler|&1])
+    current = Dict.get(handlers, msg_type)
+    if !(current && Enum.find(current, &(&1 == handler))) do
+      handlers = Dict.update(handlers, msg_type, [handler], &[handler|&1])
+    end
     {:reply, :ok, handlers}
   end
 
   def handle_call({:dispatch, %{msg: msg}}, _, handlers) do
     Logger.info "dispatch #{inspect msg}"
-    Logger.info inspect(handlers)
     dispatch_to(handlers[msg[:msgtype]], msg)
     {:reply, :ok, handlers }
   end

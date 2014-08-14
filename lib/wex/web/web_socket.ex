@@ -64,7 +64,7 @@ defmodule Wex.Web.WebSocket do
     { :reply, {:text, msg}, req, state }
   end
 
-  def websocket_terminate(_reason, _req, %{handlers: handlers}) do
+  def websocket_terminate(_reason, _req, %{handlers: handlers, dispatcher: dispatcher}) do
     Logger.info "Received terminate"
     Process.exit(self(), :shutdown)
   end

@@ -8,10 +8,9 @@ html, body {
 }
 
 
-#wex {
-  padding: 2em;
-  height: 100%;
-  min-height: 100%;
+
+#select-layout {
+    font-size: 60%;
 }
 
 .value {
@@ -34,7 +33,7 @@ table#interacter {
     width: 100%;
 }
 
-#input {
+#input-field {
   box-shadow: none;
   border: none;
   background: #ffffff;
@@ -43,6 +42,7 @@ table#interacter {
   max-width: 95%;
   min-width: 95%;
   padding: 0px;
+  padding-left: 0.5em;
 }
 
 #input input {
@@ -137,15 +137,14 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
     background: none !IMPORTANT;
 }
 
-/*
-#editor-and-tree {
-    background: #0a0;
+#editor {
+    padding: 0px !IMPORTANT;
 }
 
-#editor {
-    background: #a00;
+
+#tools {
+    padding: 0px !IMPORTANT;
 }
-*/
 
 
 
@@ -236,13 +235,17 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
 }
 
 #interaction-pane {
-    min-height: 20%;
+    padding: 0px !IMPORTANT;
 }
+
+
+
 
 #interaction {
     background: #e0ffe0;
     overflow: auto;
     height: 100%;
+    padding: 1em;
 }
 
 
