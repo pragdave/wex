@@ -5,14 +5,16 @@ defmodule Wex do
   def start, do: start([], [])
 
   def start(_,_) do
-    Logger.add_translator {CowboyTranslator, :translate}    
+    Logger.add_translator {CowboyTranslator, :translate}
     Logger.info "Starting"
+    import Supervisor.Spec
 
-    { :ok, dispatcher_pid } = Wex.Dispatcher.start_link()
+    children = [
+      worker(Wex.Dispatcher, []),
+      Wex.WSInterface.child_spec
+    ]
 
-    Wex.WSInterface.start_web_server(dispatcher_pid)
-
-    Supervisor.start_link([], strategy: :one_for_one)
+    Supervisor.start_link(children, strategy: :one_for_all)
   end
 
 end

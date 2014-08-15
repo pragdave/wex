@@ -30,7 +30,8 @@ defmodule Wex.Mixfile do
 
   def application do
     [
-     applications: [ :logger, :cowboy ]
+     applications: [ :logger, :cowboy ],
+     mod: { Wex, [] }
     ]
   end
 

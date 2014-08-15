@@ -26,8 +26,8 @@ defmodule Wex.Dispatcher do
   Dispatch a message received from the client to the registered
   handlers.
   """
-  def dispatch(pid, incoming) do
-    GenServer.call(pid, {:dispatch, incoming})
+  def dispatch(incoming) do
+    GenServer.call(@name, {:dispatch, incoming})
   end
 
   ##################
