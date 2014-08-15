@@ -27,7 +27,7 @@ defmodule Wex.Web.WebSocket do
 
   @protocol_header "sec-websocket-protocol"
 
-  def websocket_init(_any, req, dispatcher) do
+  def websocket_init(_any, req, _) do
     Logger.metadata in: "ws      "
     Logger.info "ws secondary init"
     req = case :cowboy_req.parse_header(@protocol_header, req) do
@@ -40,14 +40,14 @@ defmodule Wex.Web.WebSocket do
     # now we have a session, start up the handlers
     {:ok, handlers} = Wex.Handlers.Supervisor.start_link(self)
 
-    { :ok, req, %{dispatcher: dispatcher, handlers: handlers} }
+    { :ok, req, %{handlers: handlers} }
   end
 
   # Dispatch generic message to the handler
-  def websocket_handle({:text, msg}, req, state = %{ dispatcher: dispatcher } ) do
+  def websocket_handle({:text, msg}, req, state ) do
     Logger.info "Received #{inspect msg}"
     { :ok, object } = JSON.decode(msg, keys: :atoms)
-    Wex.Dispatcher.dispatch(dispatcher, %{msg: object})
+    Wex.Dispatcher.dispatch(%{msg: object})
     { :ok, req, state }
   end
 
@@ -64,7 +64,7 @@ defmodule Wex.Web.WebSocket do
     { :reply, {:text, msg}, req, state }
   end
 
-  def websocket_terminate(_reason, _req, %{handlers: handlers, dispatcher: dispatcher}) do
+  def websocket_terminate(_reason, _req, %{handlers: handlers}) do
     Logger.info "Received terminate"
     Process.exit(self(), :shutdown)
   end

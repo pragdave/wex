@@ -15,7 +15,7 @@ To run Wex:
 * git clone
 * cd wex
 * bower install
-* mix run --no-halt -e Wex.start
+* mix run --no-halt
 
 Enjoy
 
