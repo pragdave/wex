@@ -8,6 +8,53 @@ defmodule Wex.Utility.Autocomplete do
     no()
   end
 
+  @doc """
+  Given a string, look at the token at its end to see if it can
+  be expanded into a module or module.function.
+
+  We return a map that looks like this:
+
+      %{ given: token, find: { result } }
+
+  where `token` is the thing found at the end of the string.
+
+  The result will either be
+
+      { "no", [] }    # for no matches
+
+  or
+
+      { "yes", [ %{ ... } ] }
+
+  In the latter case, the maps in the list will always have a `kind:` 
+  key and a `name:` key.
+
+  `kind:` will be either `"module"` or `"function`".
+
+  The `name:` will be a possible expansion of the token.
+
+  In addition, the map may include a `type: "erlang"` or `type: "elixir"`
+  to indicate the provenance of the match.
+
+  ## Example
+
+      iex> expand(":user")
+      %{given: ":user",
+        find: {:yes,
+               [
+                %{kind: "module", name: ":user_sup", type: "erlang"},
+                %{kind: "module", name: ":user",     type: "erlang"},
+              ]}
+       }
+
+      iex> expand("defstru")
+      %{given: "defstru",
+        find: {:yes,
+                [%{kind: "function", mod: "Kernel", name: "defstruct"}]
+              }
+        }
+
+  """
 
   def expand(string) do
     rev = String.reverse(string)
@@ -42,6 +89,7 @@ defmodule Wex.Utility.Autocomplete do
     end
   end
 
+  ######################################################################
 
   defp expand_erlang_module(token) do
     %{ given: token, find: erlang_modules(token) }
@@ -121,24 +169,21 @@ defmodule Wex.Utility.Autocomplete do
     |> format_expansion 
   end
   
-  defp elixir_submodules(modname, root) do
-    depth   = length(String.split(modname, ".")) 
-    base    = modname
+  defp elixir_submodules(basename, root) do
+    depth = basename |> String.split(".") |> length
 
     modules_as_strings(root)
-    |> Enum.reduce([], fn(m, acc) ->
-      if String.starts_with?(m, base) do
-        tokens = String.split(m, ".")
-        if length(tokens) == depth do
-          name = List.last(tokens)
-          [%{kind: "module", type: "elixir", name: name}|acc]
-        else
-          acc
-        end
-      else
-        acc
+    |> Enum.map(&(look_for_elixir_submodule(&1, basename, depth)))
+    |> Enum.filter(&(&1))
+  end
+
+  def look_for_elixir_submodule(mod, basename, depth) do
+    if String.starts_with?(mod, basename) do
+      tokens = String.split(mod, ".")
+      if length(tokens) == depth do
+        %{kind: "module", type: "elixir", name: List.last(tokens) }
       end
-    end)
+    end
   end
   
   defp modules_as_strings(true) do
@@ -266,13 +311,11 @@ defmodule Wex.Utility.Autocomplete do
   end
   
   defp format_expansion(entries) do
-    entries = Enum.map(entries, &result/1)
-    yes(entries)
+    entries
+    |> Enum.sort_by(&(&1.name))
+    |> yes
   end
   
-  defp result(e), do: e
-
-
   defp reverse({s1, s2}) do
     { String.reverse(s1), String.reverse(s2) }
   end

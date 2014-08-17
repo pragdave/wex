@@ -23,8 +23,8 @@ defmodule IEx.AutocompleteTest do
     %{given: ":user",
       find: {:yes,
              [
-              %{kind: "module", name: ":user_sup", type: "erlang"},
               %{kind: "module", name: ":user",     type: "erlang"},
+              %{kind: "module", name: ":user_sup", type: "erlang"},
             ]}
      }
     assert expand(":user") == expected
