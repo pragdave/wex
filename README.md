@@ -15,7 +15,9 @@ To run Wex:
 * git clone
 * cd wex
 * bower install
+* mix coffee
 * mix run --no-halt
+* Browse to localhost:8080/index.html
 
 Enjoy
 

@@ -30,10 +30,14 @@ defmodule Wex.Mixfile do
 
   def application do
     [
-     applications: [ :logger, :cowboy ],
-     mod: { Wex, [] }
+      { :applications, [ :logger, :cowboy ] }
+    |
+      module(Mix.env)
     ]
   end
+
+  def module(:test), do: []
+  def module(_),     do: [ mod: { Wex, [] } ]
 
   defp deps do
     [

@@ -1,248 +1,207 @@
-# Total copy of IEx version. We needed different
-# behanvior when completing (for example) Enum.each. IEx
-# returns list containing just "each/2", while we
-# want parameter list
-
 defmodule Wex.Utility.Autocomplete do
   @moduledoc false
 
   require Logger
 
   def expand("") do
-    expand_import("")
+    # expand_import("")
+    no()
   end
 
-  def expand(expr) do
-    expr |> String.to_char_list |> Enum.reverse |> _expand
-  end
 
-  def _expand([h|t]=expr) do
+  def expand(string) do
+    rev = String.reverse(string)
+
     cond do
-      h === ?. and t != []->
-        expand_dot(reduce(t))
-      h === ?: ->
-        expand_erlang_modules
-      identifier?(h) ->
-        expand_expr(reduce(expr))
-      (h == ?/) and t != [] and identifier?(hd(t)) ->
-        expand_expr(reduce(t))
-      h in '(+[' ->
-        expand('')
+      match = Regex.run(~r{^[A-Za-z0-9]*[A-Z](\.[A-Za-z0-9]*[A-Z])*}, rev) ->
+        [token|_] = match
+        String.reverse(token) |> expand_elixir_module
+
+      match = Regex.run(~r{^[A-Za-z0-9]+:}, rev) ->
+        [token] = match
+        String.reverse(token) |> expand_erlang_module
+
+      match = Regex.run(~r{^([A-Za-z0-9_]*)(\.[a-zA-Z0-9_]+):}, rev) ->
+        [token, fun, mod|_] = match
+        reverse({token, fun, mod}) |> expand_functions_in_erlang_module
+
+      match = Regex.run(~r{^([?!]?[A-Za-z0-9_]*)(\.[a-zA-Z0-9_]+[A-Z])+}, rev) ->
+        [token, fun, mod|_] = match
+        reverse({token, fun, mod}) |> expand_functions_in_elixir_module
+
+      match = Regex.run(~r{^[A-Za-z0-9_]*[a-z_]}, rev) ->
+        [token] = match
+        fun = String.reverse(token)                            
+        expand_functions_imported_into_top_level(fun)
+
+      match = Regex.run(~r{(^:$)|(^:\b)}, rev) ->
+        expand_erlang_module(":")                              
+                            
       true ->
-        no()
+        %{ given: "", find: no()}
     end
   end
 
-  defp identifier?(h) do
-    (h in ?a..?z) or (h in ?A..?Z) or (h in ?0..?9) or h in [?_, ??, ?!]
+
+  defp expand_erlang_module(token) do
+    %{ given: token, find: erlang_modules(token) }
   end
 
-  defp expand_dot(expr) do
-    case Code.string_to_quoted expr do
-      {:ok, atom} when is_atom(atom) ->
-        expand_call(atom, "")
-      {:ok, {:__aliases__, _, list}} ->
-        expand_elixir_modules(list, "")
-      _ ->
-        no()
-    end
+  defp expand_elixir_module(token) do
+    %{ given: token, find: elixir_modules(token) }
   end
 
-  defp expand_expr(expr) do
-    case Code.string_to_quoted expr do
-      {:ok, atom} when is_atom(atom) ->
-        expand_erlang_modules Atom.to_string(atom)
-      {:ok, {atom, _, nil}} when is_atom(atom) ->
-        expand_import Atom.to_string(atom)
-      {:ok, {:__aliases__, _, [root]}} ->
-        expand_elixir_modules [], Atom.to_string(root)
-      {:ok, {:__aliases__, _, [h|_] = list}} when is_atom(h) ->
-        hint = Atom.to_string(List.last(list))
-        list = Enum.take(list, length(list) - 1)
-        expand_elixir_modules list, hint
-      {:ok, {{:., _, [mod, fun]}, _, []}} when is_atom(fun) ->
-        expand_call mod, Atom.to_string(fun)
-      _ ->
-        no()
-    end
+  defp expand_functions_in_elixir_module({token, fun, mod}) do
+    %{given: token, find: expand_elixir_functions(mod, fun)}
   end
 
-  defp reduce(expr) do
-    last_token(Enum.reverse(expr), [' ', '(', '[', '+', '-'])
+  defp expand_functions_in_erlang_module({token, fun, mod}) do
+    %{given: token, find: expand_erlang_functions(mod, fun)}
   end
 
-  defp last_token(s, []) do
-    s
+  defp expand_functions_imported_into_top_level(fun) do
+    %{given: fun, find: expand_imports(fun)}
   end
 
-  defp last_token(s, [h|t]) do
-    last_token(List.last(:string.tokens(s, h)), t)
-  end
 
-  defp yes(hint, entries) do
-    {:yes, hint, entries}
-  end
-
-  defp no do
-    {:no, "", []}
-  end
-
-  ## Formatting
-
-  defp format_expansion([], _) do
-    no()
-  end
-
-  defp format_expansion([uniq], hint) do
-    Logger.info inspect uniq
-    Logger.info inspect hint
-    hint = to_hint(uniq, hint)
-    Logger.info inspect hint
-    uniq = if hint == "", do: to_uniq_entries(uniq), else: []
-    yes(hint, uniq)
-  end
-
-  defp format_expansion([first|_]=entries, hint) do
-    binary = Enum.map(entries, &(&1.name))
-    length = byte_size(hint)
-    prefix = :binary.longest_common_prefix(binary)
-    Logger.info "hint = #{inspect hint}"
-    Logger.info "prefix = #{inspect prefix}"
-
-    if prefix in [0, length] do
-      Logger.info inspect entries
-      entries = Enum.map(entries, fn e ->
-        %{ label: e.name, value: String.slice(e.name, prefix..-1) }
-      end)
-      yes("", entries)
-    else
-      yes(:binary.part(first.name, prefix, length-prefix), [])
-    end
-  end
-
-  ## Root Modules
-
+  ################
+  # Root Modules #
+  ################
+  
   defp root_modules do
-    Enum.reduce :code.all_loaded, [], fn {m, _}, acc ->
-      mod = Atom.to_string(m)
-      case mod do
-        "Elixir" <> _ ->
-          tokens = String.split(mod, ".")
-          if length(tokens) == 2 do
-            [%{kind: :module, name: List.last(tokens), type: :elixir}|acc]
-          else
-            acc
-          end
-        _ ->
-          [%{kind: :module, name: mod, type: :erlang}|acc]
-      end
+    Enum.reduce :code.all_loaded, [], fn {mod, _}, acc ->
+      module_info(to_string(mod), acc)
     end
   end
 
-  ## Expand calls
-
-  # :atom.fun
-  defp expand_call(mod, hint) when is_atom(mod) do
-    expand_require mod, hint
+  defp module_info(mod = ("Elixir" <> _), acc) do
+    elixir_module_info(String.split(mod, "."), acc)
   end
 
-  # Elixir.fun
-  defp expand_call({:__aliases__, _, list}, hint) do
-    expand_require Module.concat(list), hint
+  defp module_info(mod, acc) do
+    [ %{kind: "module", name: ":#{mod}", type: "erlang"} | acc]
   end
 
-  defp expand_call(_, _) do
-    no()
+  defp elixir_module_info([_, actual_mod], acc) do                            
+    [%{kind: "module", name: actual_mod, type: "elixir"} | acc]
   end
 
-  defp expand_require(mod, hint) do
-    format_expansion module_funs(mod, hint), hint
+  defp elixir_module_info(_, acc) do                            
+    acc
   end
 
-  defp expand_import(hint) do
-    funs = module_funs(IEx.Helpers, hint) ++
-           module_funs(Kernel, hint) ++
-           module_funs(Kernel.SpecialForms, hint)
-    format_expansion funs, hint
+  
+
+  ##################
+  # Erlang modules #
+  ##################
+  
+  defp erlang_modules(starting) do
+    root_modules
+    |> Enum.filter(erlang_module_filter_function(starting))
+    |> format_expansion 
+  end
+  
+  defp erlang_module_filter_function("") do
+    fn m -> m.type === :erlang end
   end
 
-  ## Erlang modules
-
-  defp expand_erlang_modules(hint \\ "") do
-    format_expansion match_erlang_modules(hint), hint
+  defp erlang_module_filter_function(starting) do
+    fn m -> String.starts_with?(m.name, starting) end
   end
-
-  defp match_erlang_modules("") do
-    Enum.filter root_modules, fn m -> m.type === :erlang end
+  
+  
+  ##################
+  # Elixir modules #
+  ##################
+  
+  defp elixir_modules(token) do
+    root = !String.contains?(token, ".")
+    elixir_submodules(token, root)
+    |> format_expansion 
   end
+  
+  defp elixir_submodules(modname, root) do
+    depth   = length(String.split(modname, ".")) 
+    base    = modname
 
-  defp match_erlang_modules(hint) do
-    Enum.filter root_modules, fn m -> String.starts_with?(m.name, hint) end
-  end
-
-  ## Elixir modules
-
-  defp expand_elixir_modules(list, hint) do
-    mod = Module.concat(list)
-    format_expansion elixir_submodules(mod, hint, list == []) ++ module_funs(mod, hint), hint
-  end
-
-  defp elixir_submodules(mod, hint, root) do
-    modname = Atom.to_string(mod)
-    depth   = length(String.split(modname, ".")) + 1
-    base    = modname <> "." <> hint
-
-    Enum.reduce modules_as_lists(root), [], fn(m, acc) ->
+    modules_as_strings(root)
+    |> Enum.reduce([], fn(m, acc) ->
       if String.starts_with?(m, base) do
         tokens = String.split(m, ".")
         if length(tokens) == depth do
           name = List.last(tokens)
-          [%{kind: :module, type: :elixir, name: name}|acc]
+          [%{kind: "module", type: "elixir", name: name}|acc]
         else
           acc
         end
       else
         acc
       end
-    end
+    end)
+  end
+  
+  defp modules_as_strings(true) do
+    ["Elixir" | modules_as_strings(false) ]
+  end
+  
+  defp modules_as_strings(false) do
+    Enum.map(:code.all_loaded, fn({m, _}) -> strip_elixir(Atom.to_string(m)) end)
   end
 
-  defp modules_as_lists(true) do
-    ["Elixir.Elixir"] ++ modules_as_lists(false)
+  defp strip_elixir("Elixir." <> mod), do: mod
+  defp strip_elixir(mod), do: mod
+
+  #################################
+  # Functions in an Elixir module #
+  #################################
+
+  defp expand_elixir_functions(mod, fun) do
+    mod = mod
+          |> String.rstrip(?.)
+          |> String.split(".")
+          |> Module.concat
+
+    module_funs(mod, fun) |> format_expansion
   end
 
-  defp modules_as_lists(false) do
-    Enum.map(:code.all_loaded, fn({m, _}) -> Atom.to_string(m) end)
-  end
-
-  ## Helpers
-
-  defp module_funs(mod, hint) do
+  
+  ###########
+  # Helpers #
+  ###########
+  
+  defp module_funs(mod, fun) do
     case ensure_loaded(mod) do
       {:module, _} ->
-        falist = get_funs(mod)
-                 |> Enum.map(fn {f,a} -> {Atom.to_string(f), a} end)
-                 |> Enum.filter(&match_hint(&1, hint))
-
-        list = Enum.reduce falist, [], fn {f, a}, acc ->
-          case :lists.keyfind(f, 1, acc) do
-            {f, aa} -> :lists.keyreplace(f, 1, acc, {f, [a|aa]})
-            false -> [{f, [a]}|acc]
-          end
-        end
-
-        expand_function_list(mod, hint, list)
+        list = matching_functions_in(mod, fun)
+        expand_function_list(list, mod)
       _ ->
         []
     end
   end
+  
+  defp matching_functions_in(mod, fun) do
+    get_funs(mod)
+    |> Enum.map(fn {f,_a} -> Atom.to_string(f) end)
+    |> Enum.uniq
+    |> Enum.filter(&match_name(&1, fun))
+  end
 
-  defp match_hint({_fun,_}, ""),  do: true
-  defp match_hint({fun,_}, hint), do: String.starts_with?(fun, hint)
-
-  defp expand_function_list(mod, _hint, list) do
-    for {fun, arities} <- list do
-      %{kind: :function, mod: mod, name: fun, arities: arities}
+  defp match_name(_fun, ""),  do: true
+  defp match_name(fun, partial_name), do: String.starts_with?(fun, partial_name)
+  
+  defp expand_function_list(list, mod) do
+    mod = case to_string(mod) do
+            "Elixir." <> rest -> rest
+             other            -> other
+          end
+           
+    for fun <- list do
+      %{
+        kind:    "function", 
+        mod:     mod, 
+        name:    "#{mod}.#{fun}", 
+      }
     end
   end
                        
@@ -258,26 +217,79 @@ defmodule Wex.Utility.Autocomplete do
     end
   end
 
+
+  #################################
+  # Functions in an Erlang module #
+  #################################
+
+  defp expand_erlang_functions(mod, fun) do
+    mod = mod |> String.rstrip(?.) |> String.to_atom
+    matching_functions_in(mod, fun) 
+    |> expand_function_list(mod) 
+    |> format_expansion
+  end
+
+
+  #####################################
+  # Functions imported into top level #
+  #####################################
+                                
+  defp expand_imports(name) do
+    module_funs(Wex.Helpers, name) ++
+    module_funs(Kernel, name)      ++
+    module_funs(Kernel.SpecialForms, name)
+    |> remove_module_names
+    |> format_expansion
+  end
+
+  defp remove_module_names(list) do
+    Enum.map(list, &remove_module_name_in_entry/1)
+  end
+
+  defp remove_module_name_in_entry(entry) do
+    update_in(entry.name, &remove_module_name/1)
+  end
+
+  defp remove_module_name(name) do
+    name
+    |> String.split(".")
+    |> List.last
+  end
+  
+
+  ##############
+  # Formatting #
+  ##############
+  
+  defp format_expansion([]) do
+    no()
+  end
+  
+  defp format_expansion(entries) do
+    entries = Enum.map(entries, &result/1)
+    yes(entries)
+  end
+  
+  defp result(e), do: e
+
+
+  defp reverse({s1, s2}) do
+    { String.reverse(s1), String.reverse(s2) }
+  end
+  defp reverse({s1, s2, s3}) do
+    { String.reverse(s1), String.reverse(s2), String.reverse(s3) }
+  end
+
+  defp yes(entries) do
+    {:yes, entries}
+  end
+  
+  defp no do
+    {:no, []}
+  end
+
   defp ensure_loaded(Elixir), do: {:error, :nofile}
   defp ensure_loaded(mod),    do: Code.ensure_compiled(mod)
 
-  ## Ad-hoc conversions
-
-  defp to_uniq_entries(%{kind: :module}) do
-    []
-  end
-
-  defp to_uniq_entries(%{kind: :function, mod: mod, name: name}) do
-    { :send_doc, mod, name }
-  end
-
-
-  defp to_hint(%{kind: :module, name: name}, hint) do
-    :binary.part(name, byte_size(hint), byte_size(name) - byte_size(hint)) <> "."
-  end
-
-  defp to_hint(%{kind: :function, name: name}, hint) do
-    :binary.part(name, byte_size(hint), byte_size(name) - byte_size(hint))
-  end
 
 end

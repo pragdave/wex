@@ -27,14 +27,9 @@ class @Compiler
 
     help: (editor) =>
         session = editor.getSession()
-        cursor = editor.getCursorPosition()
-        range = session.getWordRange(cursor.row, cursor.column)
-        range.start.column = 0
-        text = session.getTextRange(range)
-        backwards = @reverse(text)
-        match = backwards.match(/^[!?.]?[a-zA-Z0-9_]+(\.[a-zA-Z0-9]*([A-Z]|[a-z]:))*/)
+        cursor  = editor.getCursorPosition()
+        match   = Util.beginning_of_line_to_point(session, cursor)
         if match
-            match = @reverse(match[0])
             @rest.get "get_help", {term: match}, @h1, @h2
 
     h1: ->
@@ -124,5 +119,3 @@ class @Compiler
                 error        
 
 
-    reverse: (text) ->
-        text.split('').reverse().join('')        

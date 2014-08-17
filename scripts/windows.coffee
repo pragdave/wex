@@ -26,7 +26,8 @@ class @Windows
 
             @show(pane) for pane in to_do.show
             @hide(pane) for pane in to_do.hide
-            
+
+            $(window).trigger('resize') 
             @current_layout = layout
             console.log "new layout is #{layout}"
 
@@ -51,9 +52,9 @@ class @Windows
     @setup: ->
         @frame = $('#frame')
         @layout = @frame.layout()
-        @hide("center", true)
+#        @hide("center", true)
         @hide("west", true)
-        @current_layout = "layout1"
+        @current_layout = "layout2"
         $("#select-layout").buttonset().on "click", @handle_click    
 
     @animate: (from, to, fn) ->

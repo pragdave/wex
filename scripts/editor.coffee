@@ -1,15 +1,24 @@
 class @Editor
 
-    constructor: (@file_loader, rest, @ws) ->
+    constructor: (@file_loader, @rest, @ws) ->
+        @create_ace_editor()
+        @current_file = null
+        @compiler = new Compiler(@ws, @rest, @, @editor)
+        WexEvent.handle(WexEvent.load_file,           "Editor", @load_file)
+        WexEvent.handle(WexEvent.open_file_in_editor, "Editor", @open_file)
+        @create_sandbox()
+
+    create_ace_editor: ->
+        language = ace.require("ace/ext/language_tools")
         @editor = ace.edit("ace")
         @editor.setTheme("ace/theme/monokai")
         session = @editor.getSession()
         session.setMode("ace/mode/elixir")
-        @current_file = null
-        @compiler = new Compiler(@ws, rest, @, @editor)
-        WexEvent.handle(WexEvent.load_file,           "Editor", @load_file)
-        WexEvent.handle(WexEvent.open_file_in_editor, "Editor", @open_file)
-        @create_sandbox()
+        @editor.setOptions
+            enableBasicAutocompletion: true
+#            enableLiveAutocompletion:  true
+            
+        new EditorCompletion(@rest, language)
 
     load_file: (event, file_node) =>
         if EditorFileList.is_file_in_list(file_node.id)

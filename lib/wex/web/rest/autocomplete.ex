@@ -12,8 +12,8 @@ defmodule Wex.Web.Rest.Autocomplete do
         Wex.Handlers.HelpSender.send_help(docs)
         []
 
-      { :yes, word, [] } when is_binary(word) ->
-        [ word ]
+#      { :yes, word, [] } when is_binary(word) ->
+#        [ word ]
 
       { :yes, "", words } when is_list(words) ->
         words

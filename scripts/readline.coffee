@@ -101,7 +101,8 @@ class @Readline
                 null
 
     append_selection_to_field: (event, response) =>
-        @ip.val(@original_field + response.item.value)
+#        @ip.val(@original_field + response.item.value)
+        @ip.val(response.item.value)
         event.preventDefault()
         event.stopPropagation()        
 

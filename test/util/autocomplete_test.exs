@@ -6,102 +6,196 @@ defmodule IEx.AutocompleteTest do
   import Wex.Utility.Autocomplete, only: [expand: 1]
 
   test :erlang_module_simple_completion do
-    assert expand(":z") == {:yes, "lib.", []}
+    expected = 
+    %{ given: ":z",
+       find: { :yes, [ %{kind: "module", name: ":zlib", type: "erlang"} ]}}
+
+    assert expand(":z") ==  expected
   end
 
   test :erlang_module_no_completion do
-    assert expand(":x") == {:no, "", []}
-    assert expand("x.Foo") == {:no, "", []}
+    assert expand(":x")    == %{ given: ":x", find: {:no, []}}
   end
-
-  test :erlang_module_common_prefix_completion do
-    assert expand(":us") == {:yes, "er", []}
-  end
-
+  
+  
   test :erlang_module_multiple_values_completion do
-    {:yes, "", list} = expand(":user")
-    assert length(list) > 1
+    expected = 
+    %{given: ":user",
+      find: {:yes,
+             [
+              %{kind: "module", name: ":user_sup", type: "erlang"},
+              %{kind: "module", name: ":user",     type: "erlang"},
+            ]}
+     }
+    assert expand(":user") == expected
   end
 
   test :elixir_simple_completion do
-    assert expand("En") == {:yes, "um", []}
-    assert expand("Enumera") == {:yes, "ble.", []}
-  end
+    expected = 
+    %{given: "En",
+      find: {:yes,
+              [%{kind: "module", name: "Enum",       type: "elixir"},
+               %{kind: "module", name: "Enumerable", type: "elixir"}
+              ]
+            }, 
+     }
+    
+    assert expand("En") == expected
 
+  end
+  
   test :elixir_auto_completion_with_self do
-    assert expand("Enumerable") == {:yes, ".", []}
+    expected =
+    %{given: "Enumerable",
+      find: {:yes, [%{kind: "module", name: "Enumerable", type: "elixir"}] }
+     }
+    assert expand("Enumerable") == expected
   end
-
+  
   test :elixir_no_completion do
-    assert expand(".")   == {:no, "", []}
-    assert expand("Xyz") == {:no, "", []}
+    assert expand(".")   == %{find: {:no, []}, given: ""}  # . is not a valid pattern
+    assert expand("Xyz") == %{find: {:no, []}, given: "Xyz"}
   end
-
+  
   test :elixir_root_submodule_completion do
     _ = [foo: 1][:foo]
-    assert expand("Elixir.Acce") == {:yes, "ss.", []}
-  end
+    expected =
+    %{given: "Acce",
+      find: {:yes,
+              [
+               %{kind: "module", name: "Access", type: "elixir"}
+              ]
+            }
+     }
 
+    assert expand("Acce") == expected
+  end
+  
   test :elixir_submodule_completion do
-    assert expand("String.Cha") == {:yes, "rs.", []}
-  end
+    expected =
+    %{given: "String.Cha",
+      find: {:yes,
+              [%{kind: "module", name: "Chars", type: "elixir"}]
+            },
+     }
 
+    assert expand("String.Cha") == expected
+  end
+  
   test :elixir_submodule_no_completion do
-    assert expand("IEx.Xyz") == {:no, "", []}
+    assert expand("IEx.Xyz") == %{find: {:no, []}, given: "IEx.Xyz"}
   end
-
+  
   test :elixir_function_completion do
-    assert expand("System.ve") == {:yes, "rsion", []}
-    assert expand(":ets.fun2") == {:yes, "ms", []}
+    expected =
+    %{given: "System.ve",
+      find: {:yes, [%{kind: "function", mod: "System", name: "System.version"}]}
+     }
+    assert expand("System.ve") == expected
   end
 
+  test :erlang_function_completion do
+    expected =
+    %{given: ":ets.fun2",
+      find: {:yes, [%{kind: "function", mod: "ets", name: "ets.fun2ms"}]}
+      }
+    assert expand(":ets.fun2") == expected
+  end
+  
   test :elixir_function_completion_when_name_is_unique do
-    assert expand("String.printable?")  == {:yes, "", {:send_doc, String, "printable?"}}
-    assert expand("String.printable?/") == {:yes, "", {:send_doc, String, "printable?"}}
+    expected =
+    %{given: "String.printable?",
+      find: {:yes,
+              [%{kind: "function", mod: "String", name: "String.printable?"}]
+            }
+     }
+    assert expand("String.printable?")  == expected
   end
-
+  
   test :elixir_macro_completion do
-    {:yes, "", list} = expand("Kernel.is_")
-    assert is_list(list)
+    expected = 
+    %{given: "Kernel.is_p",
+      find: {:yes,
+              [%{kind: "function", mod: "Kernel", name: "Kernel.is_pid"},
+               %{kind: "function", mod: "Kernel", name: "Kernel.is_port"}]
+            }
+     }
+    assert expand("Kernel.is_p") == expected
   end
-
-  test :elixir_root_completion do
-    {:yes, "", list} = expand("")
-    assert is_list(list)
-    assert "h/1" in list
-    assert "unquote/1" in list
+  
+  test :elixir_kernel_macro_completion do
+    expected =
+    %{given: "defstru",
+      find: {:yes,
+              [%{kind: "function", mod: "Kernel", name: "defstruct"}]
+            }
+      }
+    assert expand("defstru") == expected
   end
-
-  test :elixir_kernel_completion do
-    assert expand("defstru") == {:yes, "ct", []}
+  
+  test :elixir_kernel_function_completion do
+    expected =
+    %{given: "to_str",
+      find: {:yes, 
+             [%{kind: "function", mod: "Kernel", name: "to_string"}]
+            }
+     }
+    assert expand("to_str") == expected
   end
-
+  
   test :elixir_special_form_completion do
-    assert expand("unquote_spl") == {:yes, "icing", []}
+    expected =
+    %{given: "unquote_spl",
+      find: {:yes,
+              [%{kind: "function", mod: "Kernel.SpecialForms", name: "unquote_splicing"}]
+            }, 
+     }
+    assert expand("unquote_spl") == expected
   end
-
+  
   test :elixir_proxy do
-    {:yes, "", list} = expand("E")
-    assert "Elixir" in list
+    assert %{ given: "E", find: {:yes, list} } = expand("E")
+    assert Enum.find(list, &(&1.name == "Elixir"))
   end
 
   test :elixir_erlang_module_root_completion do
-    {:yes, "", list} = expand(":")
-    assert is_list(list)
-    assert "lists" in list
+    assert %{ given: ":", find: {:yes, list} } = expand(":")
+    assert Enum.find(list, &(&1.name == ":lists"))
+  end
+  
+  test :completion_inside_expression_1 do
+    expected =
+    %{given: "Strin",
+      find: {:yes,
+              [%{kind: "module", name: "String", type: "elixir"}]
+     } }
+    assert expand("1+Strin") == expected
   end
 
-  test :completion_inside_expression do
-    assert expand("1+En") == {:yes, "um", []}
-    assert expand("Test(En") == {:yes, "um", []}
-    assert expand("Test :z") == {:yes, "lib.", []}
-    assert expand("[:z") == {:yes, "lib.", []}
+  test :completion_inside_expression_2 do
+    expected =
+    %{given: "Strin",
+      find: {:yes,
+              [%{kind: "module", name: "String", type: "elixir"}]
+     } }
+    assert expand("Test(Strin") == expected
   end
 
-  test "completion with multiple results returns labels and values" do
-    assert {:yes, "n_", [] } = expand "Wex.Test.Module.WithDocs.f"
-    assert {:yes, "",   list } = expand "Wex.Test.Module.WithDocs.fn_"
-    assert %{ label: label, value: value } = hd(list)
-    assert label == "fn_" <> value
+  test :completion_inside_expression_3 do
+    expected =
+    %{given: ":z",
+      find: {:yes,
+              [%{kind: "module", name: ":zlib", type: "erlang"}]
+     } }
+    assert expand("Test :z") == expected
+  end
+
+  test :completion_inside_expression_4 do
+    expected =
+    %{given: ":z",
+      find: {:yes,
+              [%{kind: "module", name: ":zlib", type: "erlang"}]
+     } }
+    assert expand("[:z") == expected
   end
 end
