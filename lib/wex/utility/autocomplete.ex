@@ -216,20 +216,21 @@ defmodule Wex.Utility.Autocomplete do
   ###########
   
   defp module_funs(mod, fun) do
-    case ensure_loaded(mod) do
-      {:module, _} ->
-        list = matching_functions_in(mod, fun)
-        expand_function_list(list, mod)
-      _ ->
-        []
-    end
+    mod 
+    |> ensure_loaded
+    |> matching_functions_in(mod, fun)
+    |> expand_function_list(mod)
   end
   
-  defp matching_functions_in(mod, fun) do
+  defp matching_functions_in({:module, _}, mod, fun) do
     get_funs(mod)
     |> Enum.map(fn {f,_a} -> Atom.to_string(f) end)
     |> Enum.uniq
     |> Enum.filter(&match_name(&1, fun))
+  end
+
+  defp matching_functions_in(_, _mod, _fun) do
+    []
   end
 
   defp match_name(_fun, ""),  do: true
