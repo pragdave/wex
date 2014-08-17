@@ -218,30 +218,30 @@ defmodule Wex.Utility.Autocomplete do
   defp module_funs(mod, fun) do
     mod 
     |> ensure_loaded
-    |> matching_functions_in(mod, fun)
+    |> matching_functions_if_module_loaded(mod, fun)
     |> expand_function_list(mod)
   end
+
+  defp matching_functions_if_module_loaded({:module, _}, mod, fun) do
+    matching_functions_in(mod, fun)
+  end
+
+  defp matching_functions_if_module_loaded(_, _mod, _fun) do
+    []
+  end
   
-  defp matching_functions_in({:module, _}, mod, fun) do
+  defp matching_functions_in(mod, fun) do
     get_funs(mod)
     |> Enum.map(fn {f,_a} -> Atom.to_string(f) end)
     |> Enum.uniq
     |> Enum.filter(&match_name(&1, fun))
   end
 
-  defp matching_functions_in(_, _mod, _fun) do
-    []
-  end
-
   defp match_name(_fun, ""),  do: true
   defp match_name(fun, partial_name), do: String.starts_with?(fun, partial_name)
   
   defp expand_function_list(list, mod) do
-    mod = case to_string(mod) do
-            "Elixir." <> rest -> rest
-             other            -> other
-          end
-           
+    mod = mod |> to_string |> strip_elixir
     for fun <- list do
       %{
         kind:    "function", 
@@ -252,18 +252,28 @@ defmodule Wex.Utility.Autocomplete do
   end
                        
   defp get_funs(mod) do
-    if function_exported?(mod, :__info__, 1) do
-      if docs = Code.get_docs(mod, :docs) do
-        for {tuple, _line, _kind, _sign, doc} <- docs, doc != false, do: tuple
-      else
-        (mod.__info__(:functions) -- [__info__: 1]) ++ mod.__info__(:macros)
-      end
-    else
-      mod.module_info(:exports)
-    end
+    get_funs(mod, is_elixir_module(mod))
   end
 
+  defp get_funs(mod, _is_elixir = true) do
+    get_elixir_funs(mod, Code.get_docs(mod, :docs))
+  end
 
+  defp get_funs(mod, _is_not_elixir) do
+    mod.module_info(:exports)
+  end
+
+  defp get_elixir_funs(_mod, docs) when is_list(docs) do
+    for {tuple, _line, _kind, _sign, doc} <- docs, doc != false, do: tuple
+  end
+
+  defp get_elixir_funs(mod, _docs) do
+    (mod.__info__(:functions) -- [__info__: 1]) ++ mod.__info__(:macros)
+  end
+
+  defp is_elixir_module(mod), do: function_exported?(mod, :__info__, 1)
+
+                  
   #################################
   # Functions in an Erlang module #
   #################################
@@ -281,9 +291,11 @@ defmodule Wex.Utility.Autocomplete do
   #####################################
                                 
   defp expand_imports(name) do
-    module_funs(Wex.Helpers, name) ++
-    module_funs(Kernel, name)      ++
-    module_funs(Kernel.SpecialForms, name)
+    (
+      module_funs(Wex.Helpers, name) ++
+      module_funs(Kernel, name)      ++
+      module_funs(Kernel.SpecialForms, name)
+    )
     |> remove_module_names
     |> format_expansion
   end
