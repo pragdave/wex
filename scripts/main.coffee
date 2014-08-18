@@ -3,7 +3,7 @@ $ ->
     rest = new RestDriver("v1")
     
     new WsDriver (ws) ->
-        new Eval(ws)
+        new Eval(ws, rest)
         new Help(ws)
         
         mydir  = new Files.DirList(ws, rest)

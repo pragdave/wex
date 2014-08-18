@@ -4,19 +4,11 @@ defmodule Wex.Web.Rest.Autocomplete do
 
   with_param(:term) do
     case Wex.Utility.Autocomplete.expand(term) do
-      { :no, _, _ } ->
+      %{ find: { "no", _ }, given: _ } ->
         []
 
-      {:yes, "", {:send_doc, mod, fun}} ->
-        docs = Wex.Util.Docs.h(mod, String.to_atom(fun))
-        Wex.Handlers.HelpSender.send_help(docs)
-        []
-
-#      { :yes, word, [] } when is_binary(word) ->
-#        [ word ]
-
-      { :yes, "", words } when is_list(words) ->
-        words
+      %{ find: { "yes", suggestions }, given: given} ->
+        %{ given: given, suggest: suggestions }
     end
   end
 

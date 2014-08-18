@@ -1,6 +1,6 @@
 class @Eval
 
-    constructor: (@ws) ->
+    constructor: (@ws, rest) ->
         @ip     = $("#input-field")
         @op     = $("#output")
         @prompt = $("#prompt")
@@ -11,7 +11,7 @@ class @Eval
         @ws.addHandler "stdout",       @eval_stdout
         @ws.addHandler "stderr",       @eval_stderr
 
-        @readline = new Readline @ip, @prompt, @op
+        @readline = new Readline @ip, @prompt, @op, rest
         
         @ip.parents('form').on "submit", @inputAvailable
         @ip.focus()

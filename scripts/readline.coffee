@@ -1,6 +1,6 @@
 class @Readline
 
-    constructor: (@ip, @prompt, @screen) ->
+    constructor: (@ip, @prompt, @screen, @rest) ->
         @history = []
         @search_offset = 0
         @history_offset = 0
@@ -68,7 +68,7 @@ class @Readline
         @original_field = @ip.val()
         @ip.autocomplete
             disabled: false
-            source:   @autocomplete_elixir_source()
+            source:   @autocomplete_elixir_source
             response: @check_for_single_element_response
             select:   @append_selection_and_exit
             focus:    @append_selection_to_field
@@ -84,8 +84,24 @@ class @Readline
     autocomplete_history_source: ->
         (request, response) => response(@get_matching_history(request.term))
 
-    autocomplete_elixir_source: ->
-        "/api/v1/autocomplete"
+    autocomplete_elixir_source: (request, response) =>
+        @rest.get("autocomplete",
+                  term: request.term,
+                  (args) =>
+                      console.dir args
+                      response(@autocomplete_response(args))
+                  (args) =>
+                      console.log "Error from autocomplete"
+                      console.dir args
+                      response([]))
+            
+    autocomplete_response: (args) ->
+        @suggest(args.given, suggestion) for suggestion in args.suggest
+
+    suggest: (given, suggestion) ->
+        label: "#{suggestion.name} (#{suggestion.type} #{suggestion.kind})"
+        value: suggestion.name
+        given: given
 
     check_for_single_element_response: (event, response) =>
         switch response.content.length
@@ -93,16 +109,14 @@ class @Readline
                 Util.beep(40, 220)
                 @ip.autocomplete('disable')
             when 1
-                completion = response.content[0].value
-                @ip.val(@ip.val() + completion)
+                @set_ip_from_completion(response.content[0])
                 response.content = []
                 @ip.autocomplete('disable')
             else
                 null
 
     append_selection_to_field: (event, response) =>
-#        @ip.val(@original_field + response.item.value)
-        @ip.val(response.item.value)
+        @set_ip_from_completion(response.item)
         event.preventDefault()
         event.stopPropagation()        
 
@@ -110,5 +124,20 @@ class @Readline
         @append_selection_to_field(event, response)
         @ip.autocomplete('disable')
 
+    set_ip_from_completion: (completion) ->
+        new_val = @original_field
+        given_length = completion.given.length
+
+        if given_length > 0
+            if given_length == completion.value.length
+                @rest.get "get_help",
+                    term: completion.value,
+                    -> null,
+                    -> null
+                return
+
+            new_val = new_val.slice(0, -given_length)
+
+        @ip.val(new_val + completion.value)
         
 

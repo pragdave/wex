@@ -6,6 +6,26 @@ defmodule Wex.Util.Docs do
   alias Wex.Util.Text, as: T
 
   ########################################################
+  # Documentation for a term                             #
+  ########################################################
+
+  def h_for_string(term) when is_binary(term) do
+    term |> Code.string_to_quoted |> h_for_string
+  end
+
+  def h_for_string({:ok, {{:__aliases__, [alias: false], modules}}}) do
+    Module.concat(modules) |> h
+  end
+
+  def h_for_string(
+                   {:ok, 
+                    {{:., _, [{:__aliases__, _, modules}, fun]}, _, _}}
+                  ) do
+    mod = Module.concat(modules)
+    h(mod, fun)
+  end
+  
+  ########################################################
   # Documentation for modules. It has a fallback clauses #
   ########################################################
 

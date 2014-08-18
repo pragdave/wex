@@ -3,10 +3,6 @@ defmodule Wex.Utility.Autocomplete do
 
   require Logger
 
-  def expand("") do
-    # expand_import("")
-    no()
-  end
 
   @doc """
   Given a string, look at the token at its end to see if it can
@@ -40,7 +36,7 @@ defmodule Wex.Utility.Autocomplete do
 
       iex> expand(":user")
       %{given: ":user",
-        find: {:yes,
+        find: {"yes",
                [
                 %{kind: "module", name: ":user_sup", type: "erlang"},
                 %{kind: "module", name: ":user",     type: "erlang"},
@@ -49,7 +45,7 @@ defmodule Wex.Utility.Autocomplete do
 
       iex> expand("defstru")
       %{given: "defstru",
-        find: {:yes,
+        find: {"yes",
                 [%{kind: "function", mod: "Kernel", name: "defstruct"}]
               }
         }
@@ -57,6 +53,7 @@ defmodule Wex.Utility.Autocomplete do
   """
 
   def expand(string) do
+    Logger.warn("expand #{inspect string}")
     rev = String.reverse(string)
 
     cond do
@@ -64,7 +61,7 @@ defmodule Wex.Utility.Autocomplete do
         [token|_] = match
         String.reverse(token) |> expand_elixir_module
 
-      match = Regex.run(~r{^[A-Za-z0-9]+:}, rev) ->
+      match = Regex.run(~r{^[A-Za-z0-9_]*[a-z]:}, rev) ->
         [token] = match
         String.reverse(token) |> expand_erlang_module
 
@@ -87,6 +84,11 @@ defmodule Wex.Utility.Autocomplete do
       true ->
         %{ given: "", find: no()}
     end
+  end
+
+  def expand("") do
+    # expand_import("")
+     no()
   end
 
   ######################################################################
@@ -210,70 +212,6 @@ defmodule Wex.Utility.Autocomplete do
     module_funs(mod, fun) |> format_expansion
   end
 
-  
-  ###########
-  # Helpers #
-  ###########
-  
-  defp module_funs(mod, fun) do
-    mod 
-    |> ensure_loaded
-    |> matching_functions_if_module_loaded(mod, fun)
-    |> expand_function_list(mod)
-  end
-
-  defp matching_functions_if_module_loaded({:module, _}, mod, fun) do
-    matching_functions_in(mod, fun)
-  end
-
-  defp matching_functions_if_module_loaded(_, _mod, _fun) do
-    []
-  end
-  
-  defp matching_functions_in(mod, fun) do
-    get_funs(mod)
-    |> Enum.map(fn {f,_a} -> Atom.to_string(f) end)
-    |> Enum.uniq
-    |> Enum.filter(&match_name(&1, fun))
-  end
-
-  defp match_name(_fun, ""),  do: true
-  defp match_name(fun, partial_name), do: String.starts_with?(fun, partial_name)
-  
-  defp expand_function_list(list, mod) do
-    mod = mod |> to_string |> strip_elixir
-    for fun <- list do
-      %{
-        kind:    "function", 
-        mod:     mod, 
-        name:    "#{mod}.#{fun}", 
-      }
-    end
-  end
-                       
-  defp get_funs(mod) do
-    get_funs(mod, is_elixir_module(mod))
-  end
-
-  defp get_funs(mod, _is_elixir = true) do
-    get_elixir_funs(mod, Code.get_docs(mod, :docs))
-  end
-
-  defp get_funs(mod, _is_not_elixir) do
-    mod.module_info(:exports)
-  end
-
-  defp get_elixir_funs(_mod, docs) when is_list(docs) do
-    for {tuple, _line, _kind, _sign, doc} <- docs, doc != false, do: tuple
-  end
-
-  defp get_elixir_funs(mod, _docs) do
-    (mod.__info__(:functions) -- [__info__: 1]) ++ mod.__info__(:macros)
-  end
-
-  defp is_elixir_module(mod), do: function_exported?(mod, :__info__, 1)
-
-                  
   #################################
   # Functions in an Erlang module #
   #################################
@@ -281,7 +219,7 @@ defmodule Wex.Utility.Autocomplete do
   defp expand_erlang_functions(mod, fun) do
     mod = mod |> String.rstrip(?.) |> String.to_atom
     matching_functions_in(mod, fun) 
-    |> expand_function_list(mod) 
+    |> expand_function_list(mod, "erlang", ":") 
     |> format_expansion
   end
 
@@ -314,6 +252,73 @@ defmodule Wex.Utility.Autocomplete do
     |> List.last
   end
   
+  
+  ###########
+  # Helpers #
+  ###########
+  
+  defp module_funs(mod, fun) do
+    mod 
+    |> ensure_loaded
+    |> matching_functions_if_module_loaded(mod, fun)
+    |> expand_function_list(mod, "elixir")
+  end
+
+  defp matching_functions_if_module_loaded({:module, _}, mod, fun) do
+    matching_functions_in(mod, fun)
+  end
+
+  defp matching_functions_if_module_loaded(_, _mod, _fun) do
+    []
+  end
+  
+  defp matching_functions_in(mod, fun) do
+    get_funs(mod)
+    |> Enum.map(fn {f,_a} -> Atom.to_string(f) end)
+    |> Enum.uniq
+    |> Enum.filter(&match_name(&1, fun))
+  end
+
+  defp match_name(_fun, ""),  do: true
+  defp match_name(fun, partial_name), do: String.starts_with?(fun, partial_name)
+  
+  defp expand_function_list(list, mod, type, prefix \\ "") do
+    mod = mod |> to_string |> strip_elixir
+    mod = "#{prefix}#{mod}"
+    for fun <- list do
+      
+      %{
+        kind:    "function", 
+        mod:     mod, 
+        name:    "#{mod}.#{fun}", 
+        type:    type
+      }
+    end
+  end
+                       
+  defp get_funs(mod) do
+    get_funs(mod, is_elixir_module(mod))
+  end
+
+  defp get_funs(mod, _is_elixir = true) do
+    get_elixir_funs(mod, Code.get_docs(mod, :docs))
+  end
+
+  defp get_funs(mod, _is_not_elixir) do
+    mod.module_info(:exports)
+  end
+
+  defp get_elixir_funs(_mod, docs) when is_list(docs) do
+    for {tuple, _line, _kind, _sign, doc} <- docs, doc != false, do: tuple
+  end
+
+  defp get_elixir_funs(mod, _docs) do
+    (mod.__info__(:functions) -- [__info__: 1]) ++ mod.__info__(:macros)
+  end
+
+  defp is_elixir_module(mod), do: function_exported?(mod, :__info__, 1)
+
+                  
 
   ##############
   # Formatting #
@@ -337,7 +342,7 @@ defmodule Wex.Utility.Autocomplete do
   end
 
   defp yes(entries) do
-    {:yes, entries}
+    {"yes", entries}
   end
   
   defp no do

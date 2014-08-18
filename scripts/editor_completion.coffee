@@ -33,21 +33,22 @@ class @EditorCompletion
         @rest.get("autocomplete",
                   term: prefix,
                   (args) =>
-                      results = (@suggest(prefix, result) for result in args)
+                      console.dir args
+                      results = @suggestions(args)
                       callback(null, results)
                   (args) =>
                       callback(true,  []))
 
-    suggest: (prefix, suggestion) ->
-        value   = suggestion.label
-        value   = prefix + value unless value.startsWith(prefix)
+    suggestions: (results) ->
+        (@suggest(results.given.length, suggestion) for suggestion in results.suggest)
+        
+    suggest: (prefix_length, suggestion) ->
+        value   = suggestion.name
         caption = value
-        meta     = "#{suggestion.kind}"
+        meta    = suggestion.kind
 
         if suggestion.type
             meta = "#{suggestion.type} #{suggestion.kind}"
-        if suggestion.kind == "function" && suggestion.arities
-            caption = caption + "/#{suggestion.arities.join('/.')}"
 
         caption: caption
         value:   value

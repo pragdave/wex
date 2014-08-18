@@ -16,7 +16,12 @@ defmodule Wex.WSInterface do
         ]},
     ])
 
-    :ranch.child_spec(Wex.WSInterface, 5, :ranch_tcp, [port: 8080], :cowboy_protocol, [env: [ dispatch: routes]])
+    :ranch.child_spec(Wex.WSInterface, 
+                      5, 
+                      :ranch_tcp, 
+                      [port: 8080], 
+                      :cowboy_protocol, 
+                      [env: [ dispatch: routes]])
   end
 
 end
