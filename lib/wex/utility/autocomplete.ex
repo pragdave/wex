@@ -52,6 +52,10 @@ defmodule Wex.Utility.Autocomplete do
 
   """
 
+  def expand("") do
+    expand_functions_imported_into_top_level("")
+  end
+
   def expand(string) do
     Logger.warn("expand #{inspect string}")
     rev = String.reverse(string)
@@ -78,17 +82,12 @@ defmodule Wex.Utility.Autocomplete do
         fun = String.reverse(token)                            
         expand_functions_imported_into_top_level(fun)
 
-      match = Regex.run(~r{(^:$)|(^:\b)}, rev) ->
+      Regex.run(~r{(^:$)|(^:\b)}, rev) ->
         expand_erlang_module(":")                              
                             
       true ->
         %{ given: "", find: no()}
     end
-  end
-
-  def expand("") do
-    # expand_import("")
-     no()
   end
 
   ######################################################################
@@ -346,7 +345,7 @@ defmodule Wex.Utility.Autocomplete do
   end
   
   defp no do
-    {:no, []}
+    {"no", []}
   end
 
   defp ensure_loaded(Elixir), do: {:error, :nofile}

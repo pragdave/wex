@@ -41,7 +41,7 @@ defmodule Wex.Handlers.HelpSender do
   end
 
   def terminate(reason, _state) do
-    Logger.info("Terminate help sender")
+    Logger.info("Terminate help sender: #{reason}")
     :ok
   end
 

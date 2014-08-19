@@ -249,4 +249,29 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
     font-size: 80%;
 }
 
+#interaction .object-tree {
+    font-size: 90%;
+    line-height: 130%;
+}
+
+#interaction .object-tree .pair-left-wrapper {
+    height: .7em;
+    line-height: 1em;
+    display: inline-block;
+    border-bottom: 1px #9b9 dotted;
+    padding: 0;
+}
+
+#interaction .object-tree span.pair-left {
+    color: #282;
+    background: #e0ffe0;
+    margin: 0;
+    padding: 0;
+}
+
+#interaction .object-tree a.jqtree-toggler {
+    font-size: 40%;
+    color:     #aaa;
+}
+
 

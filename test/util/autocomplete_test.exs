@@ -14,7 +14,7 @@ defmodule IEx.AutocompleteTest do
   end
 
   test :erlang_module_no_completion do
-    assert expand(":x")    == %{ given: ":x", find: {:no, []}}
+    assert expand(":x")    == %{ given: ":x", find: {"no", []}}
   end
   
   
@@ -53,8 +53,8 @@ defmodule IEx.AutocompleteTest do
   end
   
   test :elixir_no_completion do
-    assert expand(".")   == %{find: {:no, []}, given: ""}  # . is not a valid pattern
-    assert expand("Xyz") == %{find: {:no, []}, given: "Xyz"}
+    assert expand(".")   == %{find: {"no", []}, given: ""}  # . is not a valid pattern
+    assert expand("Xyz") == %{find: {"no", []}, given: "Xyz"}
   end
   
   test :elixir_root_submodule_completion do
@@ -83,7 +83,7 @@ defmodule IEx.AutocompleteTest do
   end
   
   test :elixir_submodule_no_completion do
-    assert expand("IEx.Xyz") == %{find: {:no, []}, given: "IEx.Xyz"}
+    assert expand("IEx.Xyz") == %{find: {"no", []}, given: "IEx.Xyz"}
   end
   
   test :elixir_function_completion do

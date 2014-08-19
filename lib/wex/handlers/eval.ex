@@ -43,7 +43,6 @@ defmodule Wex.Handlers.Eval do
     Logger.info "starting"
     
     {old_stdout, old_stderr} = start_io_interceptors(ws)
-
     {:ok, create_state(ws, old_stdout, old_stderr)}
   end
 
@@ -203,7 +202,7 @@ defmodule Wex.Handlers.Eval do
   end
 
   defp eval_ok_response(ws, result) do
-    send ws, %{ type: :eval_ok, text: inspect(result)}
+    send ws, %{ type: :eval_ok, text: ValueTree.ToTree.to_tree(result)}
     Logger.info "OK response"
   end
 
