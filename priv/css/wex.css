@@ -250,7 +250,7 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
 }
 
 #interaction .object-tree {
-    font-size: 90%;
+    font-size: 95%;
     line-height: 130%;
 }
 
@@ -268,6 +268,16 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
     margin: 0;
     padding: 0;
 }
+
+#interaction .object-tree ul.jqtree_common {
+    margin-top: 0;
+    margin-left: 0em;
+}
+
+#interaction .object-tree ul.jqtree_common ul {
+    margin-left: 1em;
+}
+
 
 #interaction .object-tree a.jqtree-toggler {
     font-size: 40%;

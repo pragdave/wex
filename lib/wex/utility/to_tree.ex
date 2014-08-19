@@ -170,6 +170,15 @@ end
 
 defimpl ToTree, for: Any  do
   def to_tree(value) do
-    %Leaf{value: inspect(value), type: "Value"}
+    %Leaf{value: inspect(value), type: typeof(value)}
   end
+
+  defp typeof(value) when is_integer(value),   do: "Integer"
+  defp typeof(value) when is_float(value),     do: "Float"
+  defp typeof(value) when is_function(value),  do: "Function"
+  defp typeof(value) when is_pid(value),       do: "PID"
+  defp typeof(value) when is_port(value),      do: "Port"
+  defp typeof(value) when is_reference(value), do: "Reference"
+  defp typeof(_),                              do: "unknown type"
+
 end
