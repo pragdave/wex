@@ -49,7 +49,7 @@ defmodule Wex.Dispatcher do
 
   def handle_call({:dispatch, %{msg: msg}}, _, handlers) do
     Logger.info "dispatch #{inspect msg}"
-    dispatch_to(handlers[msg[:msgtype]], msg)
+    dispatch_to(handlers[msg["msgtype"]], msg)
     {:reply, :ok, handlers }
   end
 

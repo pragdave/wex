@@ -33,7 +33,7 @@ class @Eval
 
     eval_ok: (message) =>
         @prompt.html("wex>")
-        @formatter.format(message.text)
+        @op.append(@formatter.format(message.text))
         @make_output_visible()        
 
     eval_partial: (message) =>

@@ -19,9 +19,94 @@
   <title>Wex—IEx in the Browser</title>
 </head>
 <body>
+
   <div id="help" title="Wex Help" style="display: none">
     This is help
   </div>
+
+  <script id="process-info-template" type="text/x-handlebars-template">
+    <div class="process-info" 
+         title="Process Info">
+      
+      <div class="pi-tabs">
+        <ul>
+          <li><a href="#tab-process">Process</a></li>
+          <li><a href="#tab-vm">VM</a></li>
+          <li><a href="#tab-dict">Dictionary</a></li>
+          <li><a href="#tab-tree">Tree</a></li>
+        </ul>
+        <div id="tab-process">
+          <table>
+            <tr>
+              <th>Status</th>
+              <td class="status status-{{remove_colon status.v}}">{{remove_colon status.v}}</td>
+            </tr>
+            <tr>
+              <th>Registered as</th>
+              <td>
+              {{#if registered_name }}
+              {{registered_name.v}}
+              {{else}}
+              <em>not registered</em>
+              {{/if}}
+              </td>
+            </tr>
+            <tr>
+              <th>Initial call</th>
+              <td>{{mfa initial_call}}</td>
+            </tr>
+            <tr>
+              <th>Current fn</th>
+              <td>{{mfa current_function}}</td>
+            </tr>
+          </table>
+        </div>
+        <div id="tab-vm">
+          <table>
+            <tr>
+              <th>Error handler</th>
+              <td>{{error_handler.v}}</td>
+            </tr>
+            <tr>
+              <th>Msg Q len</th>
+              <td>{{message_queue_len.v}}</td>
+            </tr>
+            <tr>
+              <th>Stack size</th>
+              <td>{{stack_size.v}}</td>
+            </tr>
+            <tr>
+              <th>Heap size</th>
+              <td>{{heap_size.v}}</td>
+            </tr>
+            <tr>
+              <th>Total heap</th>
+              <td>{{total_heap_size.v}}</td>
+            </tr>
+            <tr>
+              <th>Reductions</th>
+              <td>{{reductions.v}}</td>
+            </tr>
+          </table>
+        </div>
+        <div id="tab-dict">
+          <table>
+            {{#each dictionary.v}}
+            <tr>
+              <th>{{@key}}</th>
+              <td>{{inspect this}}</td>
+            </tr>
+            {{/each}}
+          </table>
+        </div>
+        <div id="tab-tree">
+          <p>one day</p>
+        </div>
+      </div>
+    </div>
+  </script>
+  
+
   <section id="frame" style="display: none">
 
     <section id="tools" class="ui-layout-north">
@@ -97,6 +182,9 @@
           src="/scripts/lib/ace-builds/src-noconflict/ext-language_tools.js"></script>
 
   <script type="text/javascript" charset="utf-8"
+          src="/scripts/lib/handlebars/handlebars.js"></script>
+
+  <script type="text/javascript" charset="utf-8"
           src="/scripts/other/mode-elixir.js"></script>
 
 <!--
@@ -149,6 +237,11 @@
           src="/scripts/ours/files/file.js"></script>
   <script type="text/javascript" 
           src="/scripts/ours/files/file_loader.js"></script>
+
+  <script type="text/javascript" 
+          src="/scripts/ours/process_info_launcher.js"></script>
+  <script type="text/javascript" 
+          src="/scripts/ours/process_info_view.js"></script>
 
 
   <script type="text/javascript" 

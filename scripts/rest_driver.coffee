@@ -5,6 +5,6 @@ class @RestDriver
 
     get: (path, params, onDone, onFail) ->
         $.getJSON("#{@api}/#{path}", params)
-        .done(onDone)
+        .done((data) -> onDone(data, params))
         .fail((jqxhr, text, error) ->
             onFail("#{text}: #{error}"))

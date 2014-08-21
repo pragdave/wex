@@ -3,8 +3,6 @@ defmodule Wex.Web.WebSocket do
   @behaviour :cowboy_http_handler
   @behaviour :cowboy_websocket_handler
 
-  use Jazz
-
   require Logger
 
 
@@ -46,7 +44,7 @@ defmodule Wex.Web.WebSocket do
   # Dispatch generic message to the handler
   def websocket_handle({:text, msg}, req, state ) do
     Logger.info "Received #{inspect msg}"
-    { :ok, object } = JSON.decode(msg, keys: :atoms)
+    { :ok, object } = JSON.decode(msg)
     Wex.Dispatcher.dispatch(%{msg: object})
     { :ok, req, state }
   end

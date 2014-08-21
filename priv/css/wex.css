@@ -229,9 +229,17 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
     font-size: 70%;
 }
 
-#filetree a.jqtree-toggler {
+.jqtree_common.jqtree-title.jqtree-title-folder {
+    margin-left: 1.5em !IMPORTANT;
+}
+
+#filetree a.jqtree-toggler, .object-tree a.jqtree-toggler {
+    display: inline-block;
+    width:  0em;
+    overflow: visible;
     font-size: 40%;
     color:     #aaa;
+    margin: 0 !IMPORTANT;
 }
 
 #interaction-pane {
@@ -279,9 +287,68 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
 }
 
 
-#interaction .object-tree a.jqtree-toggler {
-    font-size: 40%;
-    color:     #aaa;
+
+#output span.pid {
+    cursor: help;
+}
+
+#output span.pid:after {
+      content: "ⓘ";
+      color:   blue;
+      font-weight: bold;
+      font-size: larger;
+}
+
+#output span.pid:hover {
+    color: blue;
+}
+
+#output .csize {
+    color: #888;
+    font-size: 60%;
+}
+
+.process-info {
+    font-size: 80%;
+    line-height: 110%;
+}
+
+.process-info .pi-tabs li {
+    font-size: 50%;
+}
+
+.process-info td, .process-info th {
+    vertical-align: top;
+}
+
+.process-info th {
+    text-align: right;
+    font-size:  75%;
+    font-weight: bold;
+    color: #494;
+    padding-right: 0.5em;
+}
+
+.process-info th:after {
+    content: ":"
+}
+
+.process-info .status {
+    color:      #eee;
+    padding-left: 0.5em;
+    border-radius: 0.3em;
+    text-align: center;
+    font-weight: normal;
+    font-size: 90%;
+    text-shadow: #333 0px 0px 3px;
+}
+
+.process-info .status-running {
+    background: #080;
+}
+
+.process-info .status-waiting {
+    background: #088;
 }
 
 

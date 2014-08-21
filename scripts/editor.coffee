@@ -82,6 +82,7 @@ class @Editor
     create_sandbox: ->
         sandbox = new Files.File("wex sandbox", "wex sandbox")
         @edit(sandbox, "# This is the sandbox. Have fun!")
+        @editor.selectAll()
 
     compile_on_changes: ->
         @editor.session.on "change", @reset_timer

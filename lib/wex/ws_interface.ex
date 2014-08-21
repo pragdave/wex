@@ -9,6 +9,7 @@ defmodule Wex.WSInterface do
           {'/api/v1/autocomplete',  Wex.Web.Rest.Autocomplete,  nil},
           {'/api/v1/get_help',      Wex.Web.Rest.GetHelp,       nil},
           {'/api/v1/dirlist',       Wex.Web.Rest.Dirlist,       nil},
+          {'/api/v1/process_info',  Wex.Web.Rest.ProcessInfo,   nil},
 
           {'/api/v1/file/load',     Wex.Web.Rest.LoadFile,      nil},
 

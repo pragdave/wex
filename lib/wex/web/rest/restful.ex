@@ -2,8 +2,8 @@ defmodule Wex.Web.Rest.Restful do
   defmacro __using__(_) do
     quote location: :keep do
 
-      use Jazz
       require Logger
+
 
       def init(_type, _req, _opts) do
         Logger.metadata in: unquote(Atom.to_string(__MODULE__))
@@ -47,7 +47,7 @@ defmodule Wex.Web.Rest.Restful do
         def handler(req, state) do
           {[{"dir", dir}], req} = :cowboy_req.qs_vals(req)
           result = Wex.FileManager.dirlist(dir)
-          {Jazz.encode!(result), req, state}
+          {JSON.encode!(result), req, state}
         end   
   """
   defmacro with_param(param, block) when is_atom(param) do
@@ -65,7 +65,7 @@ defmodule Wex.Web.Rest.Restful do
         } = :cowboy_req.qs_vals(req)
         result = unquote(block)
         Logger.debug("#{unquote(param)} → #{inspect result}")
-        { Jazz.encode!(result, keys: :atoms), req, state }
+        { JSON.encode!(result), req, state }
       end
     end
   end

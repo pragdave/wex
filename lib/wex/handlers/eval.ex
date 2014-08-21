@@ -22,11 +22,11 @@ defmodule Wex.Handlers.Eval do
   @doc """
   This is the dispatcher callback
   """
-  def handle(%{msgtype: "eval", text: text_to_eval}) do
+  def handle(%{"msgtype" => "eval", "text" => text_to_eval}) do
     GenServer.cast(@name, {:eval, text_to_eval})
   end
 
-  def handle(%{msgtype: "compile", text: code}) do
+  def handle(%{"msgtype" => "compile", "text" => code}) do
     GenServer.cast(@name, {:compile, code})
   end
 
@@ -202,7 +202,7 @@ defmodule Wex.Handlers.Eval do
   end
 
   defp eval_ok_response(ws, result) do
-    send ws, %{ type: :eval_ok, text: ValueTree.ToTree.to_tree(result)}
+    send ws, %{ type: :eval_ok, text: Util.Type.AddTypes.add_types(result)}
     Logger.info "OK response"
   end
 
