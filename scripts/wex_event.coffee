@@ -1,12 +1,16 @@
 class @WexEvent
 
-    @dirlist_updated     = "wex.dirlist_updated"
-    @filelist_select     = "wex.filelist_select"
-    @filelist_updated    = "wex.filelist_updated"
-    @load_file           = "wex.load_file"
-    @open_file_in_editor = "wex.open_file_in_editor"
-    @update_errors       = "wex.update_errors"
-        
+    @dirlist_updated      = "wex.dirlist_updated"
+    @filelist_select      = "wex.filelist_select"
+    @filelist_updated     = "wex.filelist_updated"
+    @load_file            = "wex.load_file"
+    @open_file_in_editor  = "wex.open_file_in_editor"
+    @update_errors        = "wex.update_errors"
+    @process_info_created = "wex.process_info_created"
+    @process_info_closed  = "wex.process_info_closed"
+
+    window.EventCentral = $(window)
+
     @trigger: (name, args...) ->
         console.log("Trigger #{name}")
         EventCentral.trigger(name, args)
@@ -23,5 +27,3 @@ class @WexEvent
             
 
 
-$ ->
-    window.EventCentral = $(window)

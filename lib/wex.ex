@@ -14,7 +14,7 @@ defmodule Wex do
       Wex.WSInterface.child_spec
     ]
 
-    Supervisor.start_link(children, strategy: :one_for_all)
+    Supervisor.start_link(children, strategy: :one_for_all, name: :wex_supervisor)
   end
 
 end

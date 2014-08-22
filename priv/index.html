@@ -53,11 +53,11 @@
             </tr>
             <tr>
               <th>Initial call</th>
-              <td>{{mfa initial_call}}</td>
+              <td>{{{v initial_call}}}</td>
             </tr>
             <tr>
               <th>Current fn</th>
-              <td>{{mfa current_function}}</td>
+              <td>{{{v current_function}}}</td>
             </tr>
           </table>
         </div>
@@ -94,13 +94,18 @@
             {{#each dictionary.v}}
             <tr>
               <th>{{@key}}</th>
-              <td>{{inspect this}}</td>
+              <td>{{{v this}}}</td>
             </tr>
             {{/each}}
           </table>
         </div>
         <div id="tab-tree">
-          <p>one day</p>
+          <table>
+            <tr>
+              <th>Links</th>
+              <td>{{{v links}}}</td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>
@@ -238,6 +243,11 @@
   <script type="text/javascript" 
           src="/scripts/ours/files/file_loader.js"></script>
 
+  <script type="text/javascript" 
+          src="/scripts/ours/process_tree.js"></script>
+<!--  <script type="text/javascript" 
+          src="/scripts/ours/process_tree_view.js"></script>
+-->
   <script type="text/javascript" 
           src="/scripts/ours/process_info_launcher.js"></script>
   <script type="text/javascript" 

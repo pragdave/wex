@@ -15,7 +15,7 @@ class @ValueFormatter
     format_obj: (obj) ->
         {s,t,v} = obj
         res = switch
-            when t == "String" then v
+            when t == "String" then @e(v)
             when s.length < 60 then @format_inline(obj)
             else @obj_to_tree(obj)
         console.log "Format.."
@@ -177,21 +177,16 @@ class @ValueFormatter
     # the children, setting the width of each to something consistent.
     
     set_key_widths: (event) =>
-        console.dir event
         tree = $(event.node.element)
-        console.log("looking at tree #{tree[0].innerText}")
         @set_key_width($(kw_list)) for kw_list in tree.find("span.KW_list")
     
     set_key_width: (kw_list) ->
-        console.log("Keyword list #{kw_list[0].title}")
         child_tree = kw_list.parent().parent().next("ul")
         keys = child_tree.find("span.pair-left")
-        console.dir(keys)
         widths = ($(key).width() for key in keys)
         max = Math.max.apply(Math, widths)
         if max > 0
-            console.log("Max = #{max}")
-            @add_leader($(key), max) for key in keys 
+            @add_leader($(key), max + 20) for key in keys 
     
     add_leader: (key, width) ->
         holder = $(key).parent("div.pair-left-wrapper")

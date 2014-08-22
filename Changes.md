@@ -1,3 +1,6 @@
+  * James Fish (fishcakez) supplied the incantation to decode the
+    initial call information of a proc_lib-run process.
+    
 * 2014-08-19
 
   * Integrated Alexei Sholik's mode-elixir syntax highlighting

@@ -7,13 +7,18 @@ class @ProcessInfoView
         console.dir @info
         div = $(ProcessInfoView.template(@info.v))
         div.find(".pi-tabs").tabs()
-        
+        title_prefix = @info.v.registered_name?.s || "Process"
         div.dialog
             hide: 300
             show:
                 effect:   "slideDown"
                 duration: 400
-            title: "Process: #{@pid}"
+            title: "#{title_prefix}: #{@pid}"
+            close: => WexEvent.trigger(WexEvent.process_info_closed, @pid)
+
+            
+        WexEvent.trigger(WexEvent.process_info_created, div)
+
 
 String::remove_colon = () ->
     if this.startsWith(":")
@@ -21,6 +26,9 @@ String::remove_colon = () ->
     else
         this
         
+Handlebars.registerHelper 'v', (object) ->
+    new ValueFormatter().format(object)
+
 Handlebars.registerHelper 'inspect', (object) ->
     object.s
 
