@@ -1,5 +1,6 @@
   * James Fish (fishcakez) supplied the incantation to decode the
-    initial call information of a proc_lib-run process.
+    initial call information of a proc_lib-run process, to get info on
+    a remote process, and to get the process state.
     
 * 2014-08-19
 

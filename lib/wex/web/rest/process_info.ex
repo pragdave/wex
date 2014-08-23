@@ -4,15 +4,20 @@ defmodule Wex.Web.Rest.ProcessInfo do
   import Util.Type.AddTypes, only: [add_types: 1]
 
   with_param(:pid) do
-    pid = parse_pid(pid)
+    pid 
+    |> pid_from_string
+    |> get_what_info_we_can
+    |> add_types
+  end
+
+  defp get_what_info_we_can(pid) do
     pid
     |> Process.info
     |> get_state(pid)
     |> translate_initial_call
-    |> add_types
   end
 
-  defp parse_pid(pid) do
+  defp pid_from_string(pid) do
     pid
     |> strip_elixir_inspect_prefix
     |> String.to_char_list
