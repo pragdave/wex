@@ -12,12 +12,12 @@ contributing, there is a list of things to do on the issues page.
 
 To run Wex:
 
-* git clone
-* cd wex
-* bower install
-* mix coffee
-* mix run --no-halt
-* Browse to localhost:8080/index.html
+1. `git clone https://github.com/pragdave/wex.git`
+2. `cd wex`
+3. `bower install`
+4. `mix deps.get`
+6. `mix run --no-halt`
+7. Browse to [localhost:8080/index.html](http://localhost:8080/index.html)
 
 Enjoy
 

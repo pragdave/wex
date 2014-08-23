@@ -111,7 +111,9 @@ defmodule Wex.Handlers.Eval do
                                 partial_input: "" }}
 
         catch kind, error ->
-          eval_error_response(ws, format_exception(kind, error, System.stacktrace))
+          Logger.error inspect {kind, error}
+          Logger.error inspect System.stacktrace
+          eval_exception_response(ws, normalize_exception(kind, error, System.stacktrace))
           { :noreply, %{state | partial_input: "" } }
         end
 
@@ -216,17 +218,17 @@ defmodule Wex.Handlers.Eval do
     Logger.info "error response"
   end
 
+  defp eval_exception_response(ws, error) do
+    send ws, %{type: :exception, text: Util.Type.AddTypes.add_types(error)}
+    Logger.info "exception response"
+  end
+
   defp compile_error_response(ws, error) do
     send ws, %{type: :compile_stderr, text: error}
     Logger.info "compile error response"
   end
 
 
-  defp format_exception(kind, reason, stacktrace) do
-    {reason, stacktrace} = normalize_exception(kind, reason, stacktrace)
-
-    Exception.format_banner(kind, reason, stacktrace)
-  end
 
   defp normalize_exception(:error, :undef, [{Wex.Helpers, fun, arity, _}|t]) do
     {%RuntimeError{message: "undefined function: #{format_function(fun, arity)}"}, t}

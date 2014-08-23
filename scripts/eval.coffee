@@ -10,6 +10,7 @@ class @Eval
         @ws.addHandler "eval_partial", @eval_partial
         @ws.addHandler "stdout",       @eval_stdout
         @ws.addHandler "stderr",       @eval_stderr
+        @ws.addHandler "exception",    @eval_exception
 
         @readline = new Readline @ip, @prompt, @op, rest
 
@@ -46,6 +47,11 @@ class @Eval
     eval_stderr: (message) =>
         @prompt.html("wex>")
         @write "<div class=\"stderr\">#{Eval.escape(message.text)}</div>"
+
+    eval_exception: (message) =>
+        @prompt.html("wex>")
+        msg = Exception.format(message.text, @formatter)
+        @write "<div class=\"exception\">#{msg}</div>"
 
     write: (msg) ->
         @op.append msg

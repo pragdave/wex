@@ -26,18 +26,42 @@ defmodule Util.Type do
   def of(value) when is_reference(value), do: :reference
   def of(value) when is_tuple(value),     do: :tuple
 
-  def maybe_keyword_collection(collection, inspected, typename, known_keyword \\ false) do
+  def maybe_keyword_collection(collection, 
+                               inspected, 
+                               type_name_and_maybe_struct_name, 
+                               known_keyword \\ false) 
+
+  def maybe_keyword_collection(collection, 
+                               inspected, 
+                               {type_name, struct_name}, 
+                               known_keyword) 
+  do
     value = if known_keyword || keyword_list?(collection) do
-              (for {key, val} <- collection, into: %{}, do: { key, AddTypes.add_types(val) } )
+              (for {key, val} <- collection, into: %{}, 
+               do: { key, AddTypes.add_types(val) } )
             else
-              (for child <- collection, do: AddTypes.add_types(child))
+              (for child <- collection, 
+               do: AddTypes.add_types(child))
             end
-    %{
-      t: typename,
-      s: inspected,
-      v: value
-    }
+
+    if struct_name do
+      %{ t: type_name, s: inspected, v: value, str: struct_name }
+    else
+      %{ t: type_name, s: inspected, v: value }
+    end
   end
+
+  def maybe_keyword_collection(collection,
+                               inspected, 
+                               type_name,
+                               known_keyword) 
+  do
+    maybe_keyword_collection(collection, 
+                             inspected, 
+                             {type_name, nil}, 
+                             known_keyword)
+  end
+
 
   def keyword_list?([{key, _value} | rest]) when is_atom(key) do
     case Atom.to_string(key) do
@@ -52,6 +76,10 @@ defmodule Util.Type do
 end
       
 alias Util.Type.AddTypes
+
+########
+# List #
+########
 
 defimpl AddTypes, for: List do
 
@@ -108,7 +136,9 @@ defimpl AddTypes, for: List do
 end
 
 
-
+############
+# HashDict #
+############
 
 defimpl AddTypes, for: HashDict do
   def add_types(dict) do
@@ -119,6 +149,10 @@ defimpl AddTypes, for: HashDict do
     }
   end
 end
+
+###########
+# HashSet #
+###########
 
 defimpl AddTypes, for: HashSet do
   def add_types(set) do
@@ -131,12 +165,23 @@ defimpl AddTypes, for: HashSet do
 end
 
 
+#######
+# Map #
+#######
 
 defimpl AddTypes, for: Map  do
+  import Util.Type
   def add_types(map) do
-    Util.Type.maybe_keyword_collection(Map.to_list(map), inspect(map), "Map")
+    maybe_keyword_collection(Map.to_list(map), inspect(map), "Map")
+  end
+  def add_types(map, struct_name) do
+    maybe_keyword_collection(Map.to_list(map), inspect(map), {"Struct", struct_name})
   end
 end
+
+#########
+# Tuple #
+#########
 
 defimpl AddTypes, for: Tuple  do
   def add_types(tuple) do
@@ -149,12 +194,29 @@ defimpl AddTypes, for: Tuple  do
 end
 
 
+########
+# Atom #
+########
+
 defimpl AddTypes, for: Atom  do
-  def add_types(value) do
-    representation = ":" <> Atom.to_string(value)
+
+  def add_types(atom)
+      when atom in [true, false, nil ]
+  do
+    representation = Atom.to_string(atom)
     %{ t: :atom, s: representation, v: representation }
   end
+
+  def add_types(value) do
+    representation = inspect(value)
+    %{ t: :atom, s: representation, v: representation }
+  end
+
 end
+
+#############
+# BitString #
+#############
 
 defimpl AddTypes, for: BitString  do
   def add_types(value) do
@@ -163,8 +225,29 @@ defimpl AddTypes, for: BitString  do
   end
 end
 
+#######
+# Any #
+#######
+
 defimpl AddTypes, for: Any  do
-  def add_types(value) do
+
+  def add_types(%{__struct__: struct} = map) do
+    try do
+      struct.__struct__
+    rescue
+      _ -> AddTypes.Map.add_types(map)
+    else
+      dunder ->
+        if :maps.keys(dunder) == :maps.keys(map) do
+#          pruned = :maps.remove(:__exception__, :maps.remove(:__struct__, map))
+          AddTypes.Map.add_types(map, Inspect.Atom.inspect(struct))
+        else
+          AddTypes.Map.add_types(map)
+        end
+    end
+  end
+
+  def add_types(value) do 
     %{ t: Util.Type.of(value), s: inspect(value), v: inspect(value) }
   end
 

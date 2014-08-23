@@ -24,6 +24,12 @@ defmodule IEx.TypeTest do
     assert add_types(self) == %{ t: :pid,     s: inspect(self), v: inspect(self) }
   end
 
+  test "Adding types to special atoms" do
+    assert add_types(true)  == %{ t: :atom, s: "true",   v: "true"  }
+    assert add_types(false) == %{ t: :atom, s: "false",  v: "false" }
+    assert add_types(nil)   == %{ t: :atom, s: "nil",    v: "nil"   }
+  end
+
   test "Adding types to lists" do
     expected = %{ t: "List", 
                   v: [
@@ -60,6 +66,21 @@ defmodule IEx.TypeTest do
     assert add_types(%{a: 1, b: 2}) == expected
   end
 
+  test "add types to a struct" do
+    expected =
+    %{
+      t: "Struct",
+      str: "RuntimeError", 
+      s: "%RuntimeError{message: \"hello\"}", 
+      v: %{
+           __exception__: %{s: "true", t: :atom, v: "true"},
+           __struct__: %{s: "RuntimeError", t: :atom, v: "RuntimeError"},
+           message: %{s: "\"hello\"", t: "String", v: "\"hello\""}
+      }
+    }
+    assert add_types(%RuntimeError{message: "hello"}) == expected
+  end
+
   test "Adding types to maps with nonatom keys" do
     expected = %{ t: "Map", 
                   v: [
@@ -72,7 +93,7 @@ defmodule IEx.TypeTest do
                       %{
                         s: "{\"a\", 1}", 
                         t: "Tuple",
-                        v: [%{s: "a", t: "String", v: "a"},
+                        v: [%{s: "\"a\"", t: "String", v: "\"a\""},
                             %{s: "1", t: :integer, v: "1"}]
                         }
                   ],
