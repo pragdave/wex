@@ -1,3 +1,5 @@
+Code.require_file "lib/mix/tasks/compile/coffee.exs"
+
 defmodule Wex.Mixfile do
   use Mix.Project
 
