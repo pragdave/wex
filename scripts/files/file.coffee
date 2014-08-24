@@ -2,7 +2,7 @@ class @Files.File
 
     constructor: (@name, @full_path) ->
         @id     = @full_path
-        @label  = @name
+        @text   = @name
         @errors = []
         
     load: (path, ok, failed) ->

@@ -3,11 +3,12 @@ class @Files.DirView
     constructor: (@tree, @model) ->
         WexEvent.handle(WexEvent.dirlist_updated,     "DirView", @dirlist_updated)
         WexEvent.handle(WexEvent.open_file_in_editor, "DirView", @file_selected)
-        @tree.tree
+        @tree.jstree
             data:     []
             autoOpen: 1
 
     dirlist_updated: (event) =>
+        alert "fix me"
         result = @add_entry(@model.tree, {})
         @tree.tree('loadData', [ result ])
         @tree.on 'tree.click', @tree_click
@@ -18,8 +19,8 @@ class @Files.DirView
             WexEvent.trigger(WexEvent.load_file, event.node)
 
     file_selected: (event, file) =>
-        node = @tree.tree('getNodeById', file.id)
-        @tree.tree('selectNode', node)
+        node = @tree.jstree(true).get_node(file.id)
+        @tree.jstree(true).select_node(node)
 
     ###########
     # Helpers #

@@ -259,7 +259,7 @@ ul.jqtree-tree li.jqtree-selected > .jqtree-element:hover {
     font-size: 80%;
 }
 
-#interaction .object-tree {
+#interaction .output > .object-tree {
     font-size: 95%;
     line-height: 130%;
 }
@@ -314,7 +314,21 @@ span.pid:after {
     line-height: 110%;
 }
 
-.process-info .pi-tabs li {
+.process-info-header .process-info-buttons {
+    float: right;
+    padding: 0.6em 1em 0em 3em;
+    font-size: 80%;
+}
+
+.process-info-header h1 {
+    float: left;
+    margin: 0;
+    padding: 0.6em 3em 0em 1em;
+}
+
+
+
+.process-info .pi-tabs ul.ui-tabs-nav li {
     font-size: 50%;
 }
 

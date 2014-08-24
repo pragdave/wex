@@ -1,6 +1,6 @@
 class @ValueFormatter
 
-    # The server send us Elixir values as tagged data structures—it
+    # The server sends us Elixir values as tagged data structures—it
     # takes the potentially nested original value and turns every value
     # into a `%{ t: type, v: value, s: string-representation }`.
 
@@ -11,14 +11,23 @@ class @ValueFormatter
             "<div class='value'>#{res}</div>"
         else
             @wrap_in_tree_widget(res)
-    
+
+    format_to_string: (obj) ->
+        res = @format(obj)
+        if $.type(res) != "string"
+            res[0].outerHTML
+        else
+            res
+        
     format_obj: (obj) ->
         {s,t,v} = obj
+        if t == "Struct"
+            console.log s
         res = switch
             when t == "String" then @e(v)
             when s.length < 60 then @format_inline(obj)
             else @obj_to_tree(obj)
-        console.log "Format.."
+        console.log "Format.. #{s}"
         console.dir obj
         console.log "becomes"
         console.dir res
@@ -32,14 +41,23 @@ class @ValueFormatter
 
     wrap_in_tree_widget: (nodes) ->
         tree = $("<div class='object-tree'></div>")
-        tree.tree
-            data:       [ nodes ]
-            autoEscape: false
-            autoOpen:   false
-            selectable: false
-
-        tree.bind "tree.open", @set_key_widths
+        setTimeout (=> @create_jstree(tree, nodes)), 50
         tree
+        
+    create_jstree: (tree, nodes) ->
+        console.dir nodes
+        tree.jstree
+            core:
+                data:   [ nodes ]
+                worker: false
+                themes:
+                    stripes: true
+#            autoEscape: false
+#            autoOpen:   false
+#            selectable: false
+
+        tree.bind "open_node.jstree", @set_key_widths
+
 
     inline_container: (obj) ->
         {s,t,v} = obj
@@ -56,6 +74,9 @@ class @ValueFormatter
                     @format_mfa(obj)
                 else
                     @wrap_list_container("{", v, "}")
+
+            when "Struct"
+                @wrap_map_container("%#{obj.str}{", v, "}")
 
             when "Map"
                 @wrap_map_container("%{", v, "}")
@@ -97,7 +118,7 @@ class @ValueFormatter
     obj_to_tree: (obj) ->
         switch $.type(obj.v)
             when "string"
-                label: @html_value(obj)
+                text: @html_value(obj)
             else
                 @format_container(obj)
 
@@ -107,7 +128,7 @@ class @ValueFormatter
             when @is_mfa(obj)
                 @format_mfa(obj)
             else
-                label:    @container_label(obj)
+                text:     @container_label(obj)
                 children: @render_children(v)
 
     render_children: (v) ->
@@ -141,22 +162,34 @@ class @ValueFormatter
         "<span class='#{klass}' title='#{obj.t}'>#{value}</class>"
 
     container_label_text: (obj) ->
-        switch
-            when obj.t == "List" && obj.v == "[]"
-                "[ ]"
-            when obj.t == "CharList"
+        size =  "#{Object.keys(obj.v).length} entries"
+        switch obj.t
+            when "List"
+                if obj.v == "[]"
+                    "[ ]"
+                else
+                    "[…#{size}…]"
+            when "CharList"
                 "#{@e(obj.s)} <span class='csize'>(#{obj.v.length} chars)</span>"
+            when "Struct"
+                "%#{obj.str}{…#{size}…}"
+            when "Map"
+                "%{…#{size}…}"
+            when "Tuple"
+                "{…#{size}…}"
+            when "KW list"
+                "[…kw_size: #{size}…]"
             else
-                "#{obj.t} <span class='csize'>(#{Object.keys(obj.v).length} entries)</span>"
+                "#{obj.t} <span class='csize'>(#{size})</span>"
 
 
     format_pair: (left, right) ->
        if right.s.length > 40 && $.type(right.v) != "string"
            right_label = @container_label(right)
-           label:    @pair_label(@e(left), right_label)
+           text:     @pair_label(@e(left), right_label)
            children: @render_children(right.v)
        else
-           label:    @pair_label(@e(left), @format_inline(right))
+           text:     @pair_label(@e(left), @format_inline(right))
 
 
     pair_label: (left, right) ->
@@ -176,12 +209,11 @@ class @ValueFormatter
     # Go through the tree looking for keyword lists. For each, look at the keys in
     # the children, setting the width of each to something consistent.
     
-    set_key_widths: (event) =>
-        tree = $(event.node.element)
-        @set_key_width($(kw_list)) for kw_list in tree.find("span.KW_list")
+    set_key_widths: (event, tree) =>
+        node = $("##{tree.node.id}")
+        @set_key_width($(kw_list)) for kw_list in node.find("ul")
     
-    set_key_width: (kw_list) ->
-        child_tree = kw_list.parent().parent().next("ul")
+    set_key_width: (child_tree) ->
         keys = child_tree.find("span.pair-left")
         widths = ($(key).width() for key in keys)
         max = Math.max.apply(Math, widths)
@@ -191,3 +223,9 @@ class @ValueFormatter
     add_leader: (key, width) ->
         holder = $(key).parent("div.pair-left-wrapper")
         holder.width width
+
+
+# Find a home for this
+# 
+$ ->
+    $.jstree.defaults.core.themes.icons = false    

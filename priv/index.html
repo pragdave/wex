@@ -13,8 +13,13 @@
 -->
   <link href="/scripts/lib/jquery.splitter/css/jquery.splitter.css"
         rel="stylesheet" type="text/css">
+
+<link rel="stylesheet" href="scripts/lib/jstree/dist/themes/default/style.min.css" />
+
+<!--
   <link href="/scripts/lib/jqtree/jqtree.css"
         rel="stylesheet" type="text/css">
+-->
 
   <title>Wex—IEx in the Browser</title>
 </head>
@@ -27,10 +32,19 @@
   <script id="process-info-template" type="text/x-handlebars-template">
     <div class="process-info" 
          title="Process Info">
-      
       <div class="pi-tabs">
+        <section class="process-info-header">
+          <h1 class="title"></h1>
+          <nav class="process-info-buttons">
+            <button class="refresh">Refresh</button>
+            <button class="close">Close</button>
+          </nav>
+        </section>
         <ul>
           <li><a href="#tab-process">Process</a></li>
+          {{#if state}}
+          <li><a href="#tab-state">State</a></li>
+          {{/if}}
           <li><a href="#tab-vm">VM</a></li>
           <li><a href="#tab-dict">Dictionary</a></li>
           <li><a href="#tab-tree">Tree</a></li>
@@ -59,14 +73,13 @@
               <th>Current fn</th>
               <td>{{{v current_function}}}</td>
             </tr>
-            {{#if state}}
-            <tr>
-              <th>State</th>
-              <td>{{{ v state}}}</td>
-            </tr> 
-            {{/if}}
           </table>
         </div>
+        {{#if state}}
+        <div id="tab-state">
+          {{{v state}}}
+        </div>
+        {{/if}}
         <div id="tab-vm">
           <table>
             <tr>
@@ -184,7 +197,7 @@
           src="/scripts/lib/jquery.layout.js"></script>
 
   <script type="text/javascript" 
-          src="/scripts/lib/jqtree/tree.jquery.js"></script>
+          src="scripts/lib/jstree/dist/jstree.js"></script>
 
   <script type="text/javascript" charset="utf-8"
           src="/scripts/lib/ace-builds/src-noconflict/ace.js"></script>

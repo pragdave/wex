@@ -14,13 +14,18 @@ class @ProcessInfoLauncher
     new_window: (event, win) =>
         @register_handler(win)
 
+    update: (pid_as_string, view) =>
+        @rest.get "process_info", pid: pid_as_string, @ok, @failed, view
+        
     handle: (pid_as_string) =>
         @rest.get "process_info", pid: pid_as_string, @ok, @failed
 
     failed: (ev) =>
         alert "Couldn't get process info"
 
-    ok: (data, req) =>
-        ProcessTree.add_process_info(req.pid, data)
-
+    ok: (data, req, view) =>
+        if view
+            view.update(this, req.pid, data)
+        else
+            ProcessTree.add_process_info(this, req.pid, data)
     

@@ -3,23 +3,35 @@ class @ProcessInfoView
     @source:   $("#process-info-template").html()
     @template: Handlebars.compile(@source)
 
-    constructor: (@pid, @info) ->
-        console.dir @info
-        div = $(ProcessInfoView.template(@info.v))
-        div.find(".pi-tabs").tabs()
-        title_prefix = @info.v.registered_name?.s || "Process"
-        div.dialog
-            hide: 300
-            show:
-                effect:   "slideDown"
-                duration: 400
-            title: "#{title_prefix}: #{@pid}"
-            close: => WexEvent.trigger(WexEvent.process_info_closed, @pid)
-
+    constructor: (launcher, @pid, @info, old_div) ->
+        @div = $(ProcessInfoView.template(@info.v))
+        tabs = @div.find(".pi-tabs").tabs
+            collapsible: true
             
-        WexEvent.trigger(WexEvent.process_info_created, div)
+        name = @info.v.registered_name?.s
+        title = if name
+                  "Process #{name.replace(':', '')} (#{@pid})"
+                else
+                  "Process #{@pid}"
+        
+        @div.find("h1.title").text(title)
+        if old_div
+            active = old_div.find(".pi-tabs").tabs("option", "active")
+            tabs.tabs("option", "active", active);            
+            old_div.after(@div)
+            old_div.remove()
+        else
+            $("#output").append(@div)
+
+        @div.find("button.close").on("click",   => @div.remove())
+        @div.find("button.refresh").on("click", => launcher.update(@pid, this))
+        WexEvent.trigger(WexEvent.process_info_created, @div)
 
 
+    update: (launcher, pid, data) =>
+        ProcessTree.add_process_info(launcher, pid, data, @div)
+        
+        
 String::remove_colon = () ->
     if this.startsWith(":")
         this.substr(1)
@@ -27,8 +39,16 @@ String::remove_colon = () ->
         this
         
 Handlebars.registerHelper 'v', (object) ->
-    new ValueFormatter().format(object)
-
+    res = new ValueFormatter().format(object)
+    if $.type(res) == "string"
+        res
+    else
+        holder = $("<div></div>").uniqueId()
+        id = holder.attr("id")
+        setTimeout((=> $("#"+id).append(res)), 0)
+        holder[0].outerHTML
+        
+        
 Handlebars.registerHelper 'inspect', (object) ->
     object.s
 
