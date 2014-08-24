@@ -12,7 +12,7 @@ defmodule Wex.Web.Rest.ProcessInfo do
 
   defp get_what_info_we_can(pid) do
     pid
-    |> Process.info
+    |> process_info
     |> get_state(pid)
     |> translate_initial_call
   end
@@ -36,18 +36,18 @@ defmodule Wex.Web.Rest.ProcessInfo do
     end
   end
 
+  # Use another process so that timed out replies aren't sent to our message
+  # queue.
   defp get_state(pid) do
-    # Use another process so that timed out replies aren't sent to our message
-    # queue.
     Task.async(fn() -> do_get_state(pid) end)
     |> Task.await()
   end
 
+  # Short timeout so don't wait too long for a busy process or process that
+  # can not handle :sys messages. The process was started by :proc_lib so it
+  # is likely that it can handle :sys messages.
   defp do_get_state(pid) do
     try do
-      # Short timeout so don't wait too long for a busy process or process that
-      # can not handle :sys messages. The process was started by :proc_lib so it
-      # is likely that it can handle :sys messages.
       :sys.get_state(pid, 100)
     else
       state ->
@@ -67,5 +67,20 @@ defmodule Wex.Web.Rest.ProcessInfo do
         (mfa)                     -> mfa
       end)
   end
+
+  defp process_info(pid) do
+    try do
+     :rpc.pinfo(pid)
+    else
+      info when is_list(info) ->
+        info
+      _other ->
+        nil
+    catch
+      :exit, _ ->
+        nil
+    end
+  end
+
 
 end
