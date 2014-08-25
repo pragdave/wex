@@ -40,7 +40,6 @@ defmodule Wex.Handlers.Eval do
   def init(ws) do
     
     Logger.metadata in: "eval    "
-    Logger.info "starting"
     
     {old_stdout, old_stderr} = start_io_interceptors(ws)
     {:ok, create_state(ws, old_stdout, old_stderr)}
@@ -65,10 +64,10 @@ defmodule Wex.Handlers.Eval do
 
   def terminate(_reason, %{stderr: stderr, stdout: stdout}) do
     Logger.info "terminate eval"
-    IO.close(:stdout)
-    :erlang.group_leader(stdout)
+    File.close(:stdout)
+    :erlang.group_leader(stdout, self)
     
-    IO.close(stderr)
+    File.close(stderr)
     try do
       Process.unregister(:standard_error)
     rescue
@@ -113,7 +112,8 @@ defmodule Wex.Handlers.Eval do
         catch kind, error ->
           Logger.error inspect {kind, error}
           Logger.error inspect System.stacktrace
-          eval_exception_response(ws, normalize_exception(kind, error, System.stacktrace))
+          response = normalize_exception(kind, error, System.stacktrace)
+          eval_exception_response(ws, response)
           { :noreply, %{state | partial_input: "" } }
         end
 
@@ -214,12 +214,19 @@ defmodule Wex.Handlers.Eval do
   end
 
   defp eval_error_response(ws, error) do
+    Logger.info "error response: #{inspect error}"
     send ws, %{type: :stderr, text: error}
-    Logger.info "error response"
   end
 
   defp eval_exception_response(ws, error) do
-    send ws, %{type: :exception, text: Util.Type.AddTypes.add_types(error)}
+    Logger.info "exception response: #{inspect error}"
+    message = error 
+              |> Wex.Util.Exception.tidy
+              |> Util.Type.AddTypes.add_types(no_quotes: true)
+
+    Logger.info "which becomes: #{inspect message}"
+    send ws, %{type: :exception, text: message}
+
     Logger.info "exception response"
   end
 
@@ -231,11 +238,13 @@ defmodule Wex.Handlers.Eval do
 
 
   defp normalize_exception(:error, :undef, [{Wex.Helpers, fun, arity, _}|t]) do
+    Logger.error("one")
     {%RuntimeError{message: "undefined function: #{format_function(fun, arity)}"}, t}
   end
 
-  defp normalize_exception(_kind, reason, stacktrace) do
-    {reason, stacktrace}
+  defp normalize_exception(kind, reason, stacktrace) do
+    Logger.error("two")
+    {Exception.format_banner(kind, reason, stacktrace), stacktrace}
   end
 
 

@@ -1,6 +1,5 @@
 defmodule Util.Type do
 
-
   defprotocol AddTypes do
     @fallback_to_any true
     
@@ -9,7 +8,7 @@ defmodule Util.Type do
     is turned into a map of %{t: .., s: ..., v: ...}, where t: is the type
     and s: is the fallback string representation.
     """
-    def add_types(value)
+    def add_types(value, options \\ %{})
   end
 
   alias Util.Type.AddTypes
@@ -29,19 +28,21 @@ defmodule Util.Type do
   def maybe_keyword_collection(collection, 
                                inspected, 
                                type_name_and_maybe_struct_name, 
+                               options,
                                known_keyword \\ false) 
 
   def maybe_keyword_collection(collection, 
                                inspected, 
                                {type_name, struct_name}, 
+                               options,
                                known_keyword) 
   do
     value = if known_keyword || keyword_list?(collection) do
               (for {key, val} <- collection, into: %{}, 
-               do: { key, AddTypes.add_types(val) } )
+               do: { key, AddTypes.add_types(val, options) } )
             else
               (for child <- collection, 
-               do: AddTypes.add_types(child))
+               do: AddTypes.add_types(child, options))
             end
 
     if struct_name do
@@ -54,11 +55,13 @@ defmodule Util.Type do
   def maybe_keyword_collection(collection,
                                inspected, 
                                type_name,
+                               options,
                                known_keyword) 
   do
     maybe_keyword_collection(collection, 
                              inspected, 
                              {type_name, nil}, 
+                             options,
                              known_keyword)
   end
 
@@ -83,7 +86,7 @@ alias Util.Type.AddTypes
 
 defimpl AddTypes, for: List do
 
-  def add_types(list) do
+  def add_types(list, options) do
     cond do
       length(list) == 0 ->
         %{
@@ -96,31 +99,31 @@ defimpl AddTypes, for: List do
         %{
           t: "CharList",
           s: "'#{Inspect.BitString.escape(IO.chardata_to_string(list), ?')}'",
-          v: (for child <- list, do: AddTypes.add_types(child))
+          v: (for child <- list, do: AddTypes.add_types(child, options))
         }
 
       Util.Type.keyword_list?(list) ->
-        Util.Type.maybe_keyword_collection(list, inspect(list), "KW list", true)
+        Util.Type.maybe_keyword_collection(list, inspect(list), "KW list", options, true)
 
       true ->
         %{
           t: "List",
           s: inspect(list),
-          v: (for child <- list, do: AddTypes.add_types(child))
+          v: (for child <- list, do: AddTypes.add_types(child, options))
         }
     end
   end
 
-  def keyword({key, value}) do
-    { key_to_binary(key), AddTypes.add_types(value) }
-  end
+  # def keyword({key, value}, options) do
+  #   { key_to_binary(key), AddTypes.add_types(value, options) }
+  # end
 
 
   ## Private
 
-  defp key_to_binary(key) do
-    Atom.to_string(key) <> ":"
-  end
+  # defp key_to_binary(key) do
+  #   Atom.to_string(key) <> ":"
+  # end
 
   defp printable?([c|cs]) when is_integer(c) and c in 32..126, do: printable?(cs)
   defp printable?([?\n|cs]), do: printable?(cs)
@@ -141,11 +144,11 @@ end
 ############
 
 defimpl AddTypes, for: HashDict do
-  def add_types(dict) do
+  def add_types(dict, options) do
     %{
       t: "HashDict",
       s: inspect(dict),
-      v: (for child <- Dict.to_list(dict), do: AddTypes.add_types(child))
+      v: (for child <- Dict.to_list(dict), do: AddTypes.add_types(child, options))
     }
   end
 end
@@ -155,11 +158,11 @@ end
 ###########
 
 defimpl AddTypes, for: HashSet do
-  def add_types(set) do
+  def add_types(set, options) do
     %{
       t: "HashSet",
       s: inspect(set),
-      v: (for child <- Set.to_list(set), do: ToTree.add_types(child))
+      v: (for child <- Set.to_list(set), do: ToTree.add_types(child, options))
     }
   end
 end
@@ -171,11 +174,11 @@ end
 
 defimpl AddTypes, for: Map  do
   import Util.Type
-  def add_types(map) do
-    maybe_keyword_collection(Map.to_list(map), inspect(map), "Map")
+  def add_types(map, options) when is_list(options) do
+    maybe_keyword_collection(Map.to_list(map), inspect(map), "Map", options)
   end
-  def add_types(map, struct_name) do
-    maybe_keyword_collection(Map.to_list(map), inspect(map), {"Struct", struct_name})
+  def add_types(map, struct_name, options) do
+    maybe_keyword_collection(Map.to_list(map), inspect(map), {"Struct", struct_name}, options)
   end
 end
 
@@ -184,11 +187,12 @@ end
 #########
 
 defimpl AddTypes, for: Tuple  do
-  def add_types(tuple) do
+  require Logger
+  def add_types(tuple, options) do
     %{
       t: "Tuple",
       s: inspect(tuple),
-      v: (for child <- Tuple.to_list(tuple), do: AddTypes.add_types(child))
+      v: (for child <- Tuple.to_list(tuple), do: AddTypes.add_types(child, options))
     }
   end
 end
@@ -200,14 +204,14 @@ end
 
 defimpl AddTypes, for: Atom  do
 
-  def add_types(atom)
+  def add_types(atom, _options)
       when atom in [true, false, nil ]
   do
     representation = Atom.to_string(atom)
     %{ t: :atom, s: representation, v: representation }
   end
 
-  def add_types(value) do
+  def add_types(value, _options) do
     representation = inspect(value)
     %{ t: :atom, s: representation, v: representation }
   end
@@ -219,8 +223,14 @@ end
 #############
 
 defimpl AddTypes, for: BitString  do
-  def add_types(value) do
-    value = Inspect.BitString.inspect(value, %Inspect.Opts{})
+
+  def add_types(value, options) do
+    value = if options[:no_quotes] do
+              value
+            else
+              Inspect.BitString.inspect(value, %Inspect.Opts{})
+            end
+
     %{ t: "String", s: value, v: value }
   end
 end
@@ -231,23 +241,23 @@ end
 
 defimpl AddTypes, for: Any  do
 
-  def add_types(%{__struct__: struct} = map) do
+  def add_types(%{__struct__: struct} = map, options) do
     try do
       struct.__struct__
     rescue
-      _ -> AddTypes.Map.add_types(map)
+      _ -> AddTypes.Map.add_types(map, options)
     else
       dunder ->
         if :maps.keys(dunder) == :maps.keys(map) do
 #          pruned = :maps.remove(:__exception__, :maps.remove(:__struct__, map))
-          AddTypes.Map.add_types(map, Inspect.Atom.inspect(struct))
+          AddTypes.Map.add_types(map, Inspect.Atom.inspect(struct), options)
         else
-          AddTypes.Map.add_types(map)
+          AddTypes.Map.add_types(map, options)
         end
     end
   end
 
-  def add_types(value) do 
+  def add_types(value, _options) do 
     %{ t: Util.Type.of(value), s: inspect(value), v: inspect(value) }
   end
 

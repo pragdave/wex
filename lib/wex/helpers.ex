@@ -74,4 +74,12 @@ defmodule Wex.Helpers do
     end
   end
 
+
+  def boom(a \\ 1, b \\ "hello") do
+    boom1(a,b) + 1
+  end
+
+  def boom1(a,b) do
+    a/b
+  end
 end

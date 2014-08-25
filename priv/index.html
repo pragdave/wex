@@ -29,6 +29,25 @@
     This is help
   </div>
 
+  <script id="exception-template" type="text/x-handlebars-template">
+    <div class="exception">
+      <h1>{{ reason }}</h1>
+      <table>
+        {{#each trace}}
+        <tr>
+        {{#if override}}
+        <td colspan="3" class="override">{{override.s}}</td>
+        {{else}}
+          <td class="prefix">{{prefix}}</td>
+          <td class="mfa">{{m}}.{{f}}/{{a}}</td>
+          <td class="location">{{location}}</td>
+        {{/if}}
+        </tr>
+        {{/each}}
+      </table>
+    </div>
+  </script>
+
   <script id="process-info-template" type="text/x-handlebars-template">
     <div class="process-info" 
          title="Process Info">

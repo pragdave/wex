@@ -378,3 +378,44 @@ span.pid:after {
     font-size: 70%;
 }
 
+
+.exception h1 {
+    margin: 0.5em 0 0 0;
+    font-weight: bold;
+    font-size: 100%;
+    color: #a33;
+}
+
+.exception table {
+    font-size: 85%;
+}
+
+.exception table td {
+    line-height: 140%;
+    padding: 0;
+    margin: 0;
+}
+
+.exception table td.override{
+    color: #955;
+}
+
+.exception table td.prefix {
+    color: #c99;
+    text-align: right;
+}
+
+.exception table td.prefix:after {
+    content: ":"
+}
+
+.exception table td.mfa {
+    padding-left: 1em;
+    color: #955;
+}
+
+.exception table td.location {
+    color: #a88;
+    padding-left: 2em;
+}
+
