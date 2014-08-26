@@ -419,3 +419,22 @@ span.pid:after {
     padding-left: 2em;
 }
 
+.exception-level.l0 {
+    background: #722;
+    color:      #fdd;
+}
+
+.exception-level.l1 {
+    background: #944;
+    color:      #fee;
+}
+
+.exception-level.l2 {
+    background: #b66;
+    color:      #fff;
+}
+
+.exception-level.l3 {
+    background: #d99;
+    color:      #800;
+}

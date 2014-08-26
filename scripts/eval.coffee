@@ -27,6 +27,7 @@ class @Eval
         @op.append "<div class=\"iprompt\">#{prompt}</div>
                     <div class=\"ip\">#{Eval.escape(val)}</div>"
         @ip.val ""
+        WexEvent.trigger(WexEvent.exception_clear_all)
         @ws.send "eval", val
         ev.preventDefault()
         ev.stopPropagation()

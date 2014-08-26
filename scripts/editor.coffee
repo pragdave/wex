@@ -3,13 +3,19 @@ class @Editor
     constructor: (@file_loader, @rest, @ws) ->
         @create_ace_editor()
         @current_file = null
-        @compiler = new Compiler(@ws, @rest, @, @editor)
+        @compiler     = new Compiler(@ws, @rest, @, @editor)
+        @displayed_exceptions = []
+
         WexEvent.handle(WexEvent.load_file,           "Editor", @load_file)
         WexEvent.handle(WexEvent.open_file_in_editor, "Editor", @open_file)
+        WexEvent.handle(WexEvent.show_exception_in_editor, "Editor", @note_exception)
+        WexEvent.handle(WexEvent.exception_clear_all,      "Editor", @remove_exceptions)
+
         @create_sandbox()
 
     create_ace_editor: ->
         language = ace.require("ace/ext/language_tools")
+        @range  = ace.require("ace/range")
         @editor = ace.edit("ace")
         @editor.setTheme("ace/theme/monokai")
         session = @editor.getSession()
@@ -81,7 +87,14 @@ class @Editor
         
     create_sandbox: ->
         sandbox = new Files.File("wex sandbox", "wex sandbox")
-        @edit(sandbox, "# This is the sandbox. Have fun!")
+#        @edit(sandbox, "# This is the sandbox. Have fun!")
+        @edit(sandbox, """
+        defmodule A do
+          def b(c,d) do
+              c/d
+          end
+        end
+        """)
         @editor.selectAll()
 
     compile_on_changes: ->
@@ -97,5 +110,29 @@ class @Editor
 
     trigger_compilation: =>
         @compiler.compile_file()
-        
-        
+
+    # this is for when we switch files
+    add_exceptions_from_file: =>
+        session = @editor.getSession()
+        for line, level in @current_file.stacktrace
+            add_exception(session, line-1, level) 
+
+    # and this is when an exception comes in when code is run
+    note_exception: (event, line, level) =>
+        console.dir [ line, level ]
+        line -= 1
+        range = new @range.Range(line, 0, line, 1000)
+        @editor.navigateTo(line, 0)
+        @add_exception(@editor.getSession(), line, level)
+
+    add_exception: (session, line, level) =>
+        class_name = "exception-level l#{level}"
+        session.addGutterDecoration(line, class_name)
+        @displayed_exceptions.push [line, class_name]
+
+    remove_exceptions: =>
+        session = @editor.getSession()
+        for [line, class_name] in @displayed_exceptions
+            session.removeGutterDecoration(line, class_name)
+
+

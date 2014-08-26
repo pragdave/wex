@@ -55,7 +55,7 @@ Handlebars.registerHelper 'inspect', (object) ->
 Handlebars.registerHelper 'remove_colon', (str) ->
     str.remove_colon()
 
-Handlebars.registerHelper 'mfa', (object) ->
+Handlebars.registerHelper 'format_mfa', (object) ->
     if object
         v = object.v
         if object.t == "Tuple" && v.length == 3

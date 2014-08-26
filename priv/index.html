@@ -35,13 +35,9 @@
       <table>
         {{#each trace}}
         <tr>
-        {{#if override}}
-        <td colspan="3" class="override">{{override.s}}</td>
-        {{else}}
           <td class="prefix">{{prefix}}</td>
-          <td class="mfa">{{m}}.{{f}}/{{a}}</td>
+          <td class="mfa">{{mfa}}</td>
           <td class="location">{{location}}</td>
-        {{/if}}
         </tr>
         {{/each}}
       </table>

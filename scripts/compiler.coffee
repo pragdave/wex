@@ -19,6 +19,7 @@ class @Compiler
                 .getAllLines()
         console.dir(lines)
         @editor.clear_all_errors()
+        WexEvent.trigger(WexEvent.exception_clear_all)
         @ws.send "compile", lines.join("\n")
 
     #############

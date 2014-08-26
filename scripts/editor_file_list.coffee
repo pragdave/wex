@@ -2,6 +2,7 @@ class @EditorFileList
     
     @files: []
 
+                    
     @make_active: (file) ->
         if (index = @find_file_index_in_list(file.id)) >= 0
             WexEvent.trigger(WexEvent.filelist_select, index, file)
@@ -27,5 +28,20 @@ class @EditorFileList
     @is_file_in_list: (file_name) ->
         @find_file_index_in_list(file_name) >= 0
 
-    @clear_all_errors: ->
+    @note_exception: (event, file, line, level) =>
+        if file = @find_file_node_in_list(file)
+            file.record_stack_trace(line)
+            WexEvent.trigger(WexEvent.exception_in_file, file, line, level)
+            
+    @clear_all_errors: =>
         file.clear_errors() for file in @files
+
+
+    WexEvent.handle(WexEvent.exception_line,
+                    "EditorFileList",
+                    @note_exception)
+
+    WexEvent.handle(WexEvent.exception_clear_all,
+                    "EditorFileList",
+                    @clear_all_errors)
+

@@ -19,13 +19,46 @@ defmodule Wex.Util.Exception do
   end
 
 
-  def format(frame = {:erlang, fun, [a,b], []}) do
+  defp format(frame) do
+    frame
+    |> replace_charlist
+    |> to_map
+    |> add_mfa
+    |> add_location
+  end
+
+   defp replace_charlist({m, f, a, [file: file, line: line]}) when is_list(file) do
+     { m, f, a, [ file: List.to_string(file), line: line ] }
+   end
+
+  defp replace_charlist(frame) do
+    frame
+  end
+
+
+  defp to_map(frame) do
+    %{ frame: frame, mfa: "", location: "" }
+  end
+
+  def add_mfa(frame = %{ frame: {:erlang, fun, [a,b], []}}) do
     if Regex.match?(~r/[a-zA-Z]/, Atom.to_string(fun)) do
-      frame
+      %{ frame | mfa: Elixir.Exception.format_mfa(:erlang, fun, [a,b]) }
     else
-      %{ override: "evaluating “#{a} #{fun} #{b}”", frame: frame }
+      %{ frame | mfa: "“#{a} #{fun} #{b}”"  }
     end
   end
 
-  def format(frame), do: frame
+  def add_mfa(frame = %{ frame: {m, f, a, _} }) do
+    %{ frame | mfa: Elixir.Exception.format_mfa(m, f, a) }
+  end
+
+  def add_location(frame = %{ frame: { _, _, _, [file: file, line: line]} }) do
+    location = Elixir.Exception.format_file_line(file, line)
+    %{ frame | location: String.rstrip(location, ?:)}
+  end
+
+  def add_location(frame = %{ frame: { _, _, _, []} }) do
+    frame
+  end
+
 end

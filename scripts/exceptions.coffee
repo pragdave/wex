@@ -7,12 +7,24 @@ class @Exception
         console.log "BOOM"
         console.dir msg
         {s, t, v} = msg
+        
         if t !=  "Tuple" || v.length != 2
             formatter.format(msg)
         else
-            @format_stack(v[1].v, v[0].v)
+            reason = v[0].v
+            stack  = v[1].v
+            @notify_files_they_have_a_stacktrace(stack)
+            @format_stack(reason, stack)
 
-    @format_stack: (stack, reason) ->
+    @notify_files_they_have_a_stacktrace: (stack) ->
+        for frame, level in stack
+            raw_frame = frame.v.frame.v
+            location  = raw_frame[3].v
+            file      = location.file.s
+            line      = parseInt(location.line.s)
+            WexEvent.trigger(WexEvent.exception_line, file, line, level)
+        
+    @format_stack: (reason, stack) ->
         stack_data =
             reason: reason
             trace:  @trace(stack)
@@ -22,51 +34,10 @@ class @Exception
         (@format_frame(frame, @prefix(n)) for frame, n in stack)
     
     @format_frame: (frame, prefix) ->
-        if frame.t == "Map"
-            @format_override(frame)
-        else
-            @format_regular_frame(frame, prefix)
+        actual = frame.v
+        prefix:   prefix
+        mfa:      actual.mfa.s
+        location: actual.location.s
 
-    @format_override: (frame) ->
-        override: frame.v.override
-
-        
-    @format_regular_frame: (frame, prefix) ->
-        [ m, f, a, l ] = frame.v
-        if a.t == "List"
-            @format_call(m, f, a, l, prefix)
-        else
-            m:        m.s
-            f:        @remove_leading_colon(f.s)
-            a:        a.s
-            location: @format_location(l)
-            prefix:   prefix
-
-    @format_call: (m, f, a, l, prefix) ->
-            m:        m.s
-            f:        @remove_leading_colon(f.s)
-            a:        a.s
-            location: @format_location(l)
-            prefix:   prefix
-        
-        
-    @format_location: (loc) ->
-        if loc.t == "List" && loc.v.length == 0
-            ""
-        else
-            "#{@remove_quotes(loc.v.file.s)}:#{loc.v.line.s}"
-    
     @prefix: (n) ->
         if n == 0 then "at" else "from"
-
-    @remove_leading_colon: (str) ->
-        if str.startsWith(":")
-            str.substr(1)
-        else
-            str
-
-    @remove_quotes: (str) ->
-        str.substr(1, str.length-2)
-        
-
-    

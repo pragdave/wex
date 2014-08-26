@@ -8,7 +8,11 @@ class @WexEvent
     @update_errors        = "wex.update_errors"
     @process_info_created = "wex.process_info_created"
     @process_info_closed  = "wex.process_info_closed"
-
+    @exception_in_file    = "wex.exception_in_file"
+    @exception_line       = "wex.exception_line"
+    @exception_clear_all  = "wex.exception_clear_all"
+    @show_exception_in_editor = "wex.show_exception_in_editor"
+    
     window.EventCentral = $(window)
 
     @trigger: (name, args...) ->

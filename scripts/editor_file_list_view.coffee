@@ -1,9 +1,9 @@
 class @EditorFileListView
 
     constructor: (@model) ->
-        @tabs = $("#tabs")
-        @tab_list = @tabs.find("#tab-list")
-
+        @tabs         = $("#tabs")
+        @tab_list     = @tabs.find("#tab-list")
+        @current_file = null
         @add_tab_click_handler()
         
         WexEvent.handle(WexEvent.filelist_updated,
@@ -12,9 +12,11 @@ class @EditorFileListView
         WexEvent.handle(WexEvent.filelist_select,
                        "EditorFileListView",
                        @select_file_list_entry)
+        WexEvent.handle(WexEvent.exception_in_file,
+                       "EditorFileListView",
+                       @exception_in_file)
 
     update_file_list: (event, index, file) =>
-        console.dir file
         li = $("<li><a href=\"#ace\">#{file.name}</a></li>")
         li.data("file", file)
         @tab_list.append(li)
@@ -26,11 +28,18 @@ class @EditorFileListView
         event.preventDefault()
 
     select: (li) ->
+        @current_file = li.data("file")
         li.addClass('active').siblings().removeClass('active')
-        WexEvent.trigger(WexEvent.open_file_in_editor, li.data("file"))
+        WexEvent.trigger(WexEvent.open_file_in_editor, @current_file)
         
     select_file_list_entry: (event, index, file) =>
         @select($(@tab_list.find('li')[index]))
 
     add_tab_click_handler: ->
         @tab_list.on "click", "a", @tab_clicked
+
+    exception_in_file: (event, file, line, level) =>
+        if file == @current_file
+            WexEvent.trigger(WexEvent.show_exception_in_editor,
+                line, level)
+            
